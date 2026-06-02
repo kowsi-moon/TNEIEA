@@ -128,7 +128,7 @@ function Footer() {
            <Link to="/privacy-policy">Privacy & Policy</Link>
             
 
-               <Link to="/Terms-Header" className="hover:text-black transition">
+               <Link to="/terms-header" className="hover:text-black transition">
 Terms & Services
 </Link>
 
@@ -140,7 +140,7 @@ Terms & Services
   Return Policy
 </Link>
 
-<Link to="/Cancellation" className="hover:text-black transition">
+<Link to="/cancellation" className="hover:text-black transition">
   Cancellation Policy
 </Link>
             </div>
