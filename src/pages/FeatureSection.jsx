@@ -30,7 +30,7 @@ function FutureSection() {
 
           {/* Primary Button */}
           <button
-            onClick={() => navigate("/member-create")}
+            onClick={() => navigate("/member_create")}
             className="bg-red-600 hover:bg-red-700 transition duration-300 text-white font-semibold text-base md:text-lg px-8 md:px-10 py-4 md:py-5 rounded-xl flex items-center justify-center gap-3 shadow-md w-full sm:w-auto"
           >
             Join the Association

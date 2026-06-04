@@ -107,7 +107,7 @@ function MembershipPlan() {
 
         {/* BUTTON */}
         <button
-          onClick={() => navigate("/member-create")}
+          onClick={() => navigate("/member_create")}
           className="mt-10 sm:mt-14 w-full rounded-lg bg-red-500 hover:bg-red-600 transition-all duration-300 py-3 sm:py-4 text-white text-[20px] sm:text-[24px] md:text-[26px] font-bold shadow-md"
         >
           Register Now

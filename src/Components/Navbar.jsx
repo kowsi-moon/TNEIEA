@@ -26,17 +26,17 @@ function Navbar() {
       <div className="w-full px-5 md:px-10 lg:px-20 xl:px-40 h-[92px] flex items-center">
 
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <img
-            src={logo}
-            alt="logo"
-            className="w-[60px] md:w-[74px] h-[45px] md:h-[54px] object-cover"
-          />
+       <Link to="/" className="flex items-center gap-2">
+  <img
+    src={logo}
+    alt="logo"
+    className="w-[60px] md:w-[74px] h-[45px] md:h-[54px] object-cover"
+  />
 
-          <h1 className="text-[18px] md:text-[22px] font-bold tracking-wide text-black">
-            TNEIEA
-          </h1>
-        </div>
+  <h1 className="text-[18px] md:text-[22px] font-bold tracking-wide text-black">
+    TNEIEA
+  </h1>
+</Link>
 
         {/* Desktop Nav */}
         <div className="hidden lg:flex items-center gap-10 xl:gap-14 mx-auto">
@@ -85,21 +85,21 @@ function Navbar() {
             <div className="absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
 
               <Link
-                to="/member-create"
+                to="/member_create"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
                 Member Create
               </Link>
 
               <Link
-                to="/supplier-create"
+                to="/supplier_create"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
                 Supplier Create
               </Link>
 
               <Link
-                to="/service-provider"
+                to="/service_provider"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
                 Service Provider
@@ -159,21 +159,21 @@ function Navbar() {
               <div className="mt-3 bg-gray-50 rounded-xl overflow-hidden border border-gray-200">
 
                 <Link
-                  to="/member-create"
+                  to="/member_create"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
                   Member Create
                 </Link>
 
                 <Link
-                  to="/supplier-create"
+                  to="/supplier_create"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
                   Supplier Create
                 </Link>
 
                 <Link
-                  to="/service-provider"
+                  to="/service_provider"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
                   Service Provider

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 function MemberRegistration() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -49,6 +50,7 @@ const [formData, setFormData] = useState({
 
 const [states, setStates] = useState([]);
 const [cities, setCities] = useState([]);
+const [popupMessage, setPopupMessage] = useState("");
 const [errorMessages, setErrorMessages] = useState({});
 const [validationErrors, setValidationErrors] = useState({});
 
@@ -266,6 +268,9 @@ data.append("dob", formattedDate);
       setPopupType("success");
       setShowPopup(true);
 
+
+      
+
       // reset
       setFormData({
         memberNo: "",
@@ -295,22 +300,53 @@ data.append("dob", formattedDate);
       setIdProofDoc(null);
       setFormKey((prev) => prev + 1);
     }
-
-  } catch (error) {
-
-    console.log("ERROR RESPONSE:", error?.response?.data);
-
     
+if (response.data.result === false) {
+
+  if (response.data.message?.contactno) {
+    setPopupMessage("Contact Number Already Taken");
     setPopupType("error");
     setShowPopup(true);
-
-    if (error?.response?.data?.message) {
-      setErrorMessages(error.response.data.message);
-    }
-
-  } finally {
-    setLoading(false);
+    return;
   }
+
+  if (response.data.message?.email) {
+    setPopupMessage("Email ID Already Taken");
+    setPopupType("error");
+    setShowPopup(true);
+    return;
+  }
+}
+
+} catch (error) {
+  console.log("ERROR RESPONSE:", error?.response?.data);
+
+  const message = error?.response?.data?.message;
+
+  if (message?.contactno) {
+    setPopupType("error");
+    setPopupMessage(message.contactno[0]);
+    setShowPopup(true);
+
+    console.log("POPUP OPEN");
+    return;
+  }
+
+  if (message?.email) {
+    setPopupType("error");
+    setPopupMessage(message.email[0]);
+    setShowPopup(true);
+    return;
+  }
+
+  setPopupType("error");
+  setPopupMessage("Something went wrong");
+  setShowPopup(true);
+
+}
+ finally {
+  setLoading(false);
+}
 };
 
 
@@ -359,10 +395,10 @@ onClick={() => {
           </h2>
 
           <p className="text-gray-600 mt-2 text-sm">
-            {popupType === "success"
-              ? "Registration completed successfully."
-              : "Something went wrong. Please try again."}
-          </p>
+  {popupType === "success"
+    ? "Registration completed successfully."
+    : popupMessage}
+</p>
 
           <button
   onClick={() => {

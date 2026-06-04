@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 
 
@@ -38,6 +39,7 @@ const navigate = useNavigate();
 const [validationErrors, setValidationErrors] = useState({})
 const [successMessage, setSuccessMessage] = useState("");
 const [showPopup, setShowPopup] = useState(false);
+const [popupMessage, setPopupMessage] = useState("");
 const [popupType, setPopupType] = useState("");
 
   const [dropdownOpen, setDropdownOpen] = useState({
@@ -359,6 +361,23 @@ setShowPopup(true);
         mailId: "",
       });
     }
+
+    if (result.result === false) {
+
+  if (result.message?.contactno) {
+    setPopupMessage("Contact Number Already Taken");
+    setPopupType("error");
+    setShowPopup(true);
+    return;
+  }
+
+  if (result.message?.email) {
+    setPopupMessage("Email ID Already Taken");
+    setPopupType("error");
+    setShowPopup(true);
+    return;
+  }
+}
   } catch (err) {
     console.error(err);
     setPopupType("error");
@@ -408,11 +427,11 @@ onClick={() => {
             {popupType === "success" ? "Success!" : "Error!"}
           </h2>
 
-          <p className="text-gray-600 mt-2 text-sm">
-            {popupType === "success"
-              ? "Registration completed successfully."
-              : "Something went wrong. Please try again."}
-          </p>
+        <p className="text-gray-600 mt-2 text-sm">
+  {popupType === "success"
+    ? "Registration completed successfully."
+    : popupMessage}
+</p>
 
           <button
   onClick={() => {

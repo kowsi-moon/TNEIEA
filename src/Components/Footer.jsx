@@ -48,15 +48,17 @@ function Footer() {
           <div className="max-w-[320px]">
 
             <div className="flex items-center gap-4">
-              <img
-                src={logo}
-                alt="logo"
-                className="w-[40px] h-[40px] object-contain"
-              />
+             <Link to="/" className="flex items-center gap-4">
+  <img
+    src={logo}
+    alt="logo"
+    className="w-[40px] h-[40px] object-contain"
+  />
 
-              <h1 className="text-[22px] font-bold text-[#C1442E] leading-snug">
-                TNEIEA
-              </h1>
+  <h1 className="text-[22px] font-bold text-[#C1442E] leading-snug">
+    TNEIEA
+  </h1>
+</Link>
             </div>
 
             <p className="text-red-700 mt-5 leading-7 md:leading-8 text-base sm:text-[16px]">
@@ -125,18 +127,18 @@ function Footer() {
 
             <div className="flex flex-col gap-2 mt-6 md:mt-7 text-red-700 text-base sm:text-[16px]">
 
-           <Link to="/privacy-policy">Privacy & Policy</Link>
+           <Link to="/privacy_policy">Privacy Policy</Link>
             
 
-               <Link to="/terms-header" className="hover:text-black transition">
-Terms & Services
+               <Link to="/terms_conditions" className="hover:text-black transition">
+Terms & Conditions
 </Link>
 
-           <Link to="/refund-policy" className="hover:text-black transition">
+           <Link to="/refund_policy" className="hover:text-black transition">
   Refund Policy
 </Link>
 
-       <Link to="/return-policy" className="hover:text-black transition">
+       <Link to="/return_policy" className="hover:text-black transition">
   Return Policy
 </Link>
 
@@ -212,11 +214,11 @@ Terms & Services
 
           <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8 text-red-700 text-sm sm:text-[15px]">
 
-             <Link to="/Terms-Header" className="hover:text-black transition">
-Terms & Services
+             <Link to="/terms_conditions" className="hover:text-black transition">
+Terms & Conditions
 </Link>
 
-            <Link to="/privacy-policy">Privacy & Policy</Link>
+            <Link to="/privacy_policy">Privacy Policy</Link>
 
            
 

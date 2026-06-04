@@ -49,23 +49,23 @@ function App() {
         <Route path="/contact" element={<div className="pt-[92px]"><ContactHero /><ContactSection /><MapSection /></div>} />
 
         {/* REGISTRATION & PROVIDERS */}
-        <Route path="/member-create" element={<div className="pt-[92px]"><MemberRegistration /></div>} />
-        <Route path="/supplier-create" element={<div className="pt-[92px]"><SupplierRegistration /></div>} />
-        <Route path="/service-provider" element={<div className="pt-[92px]"><ServiceProvider /></div>} />
+        <Route path="/member_create" element={<div className="pt-[92px]"><MemberRegistration /></div>} />
+        <Route path="/supplier_create" element={<div className="pt-[92px]"><SupplierRegistration /></div>} />
+        <Route path="/service_provider" element={<div className="pt-[92px]"><ServiceProvider /></div>} />
 
         {/* EVENTS */}
         <Route path="/events" element={<div className="pt-[92px]"><EventHero /><Events /><EventGallery /></div>} />
-        <Route path="/event-details/:id" element={<div className="pt-[92px]"><EventDetails /></div>} />
+        <Route path="/event_details/:id" element={<div className="pt-[92px]"><EventDetails /></div>} />
 
         {/* MEMBERSHIP */}
         <Route path="/membership" element={<div className="pt-[92px]"><MembershipHero /><MembershipFAQ /></div>} />
 
         {/* POLICIES (All paths strictly lowercase) */}
-        <Route path="/privacy-policy" element={<div className="pt-[92px]"><PrivacyPolicy /><PrivacyContent /></div>} />
-        <Route path="/refund-policy" element={<div className="pt-[92px]"><RefundPolicy /><RefundContant /></div>} />
-        <Route path="/return-policy" element={<div className="pt-[92px]"><ReturnContant /></div>} />
+        <Route path="/privacy_policy" element={<div className="pt-[92px]"><PrivacyPolicy /><PrivacyContent /></div>} />
+        <Route path="/refund_policy" element={<div className="pt-[92px]"><RefundPolicy /><RefundContant /></div>} />
+        <Route path="/return_policy" element={<div className="pt-[92px]"><ReturnContant /></div>} />
         <Route path="/cancellation" element={<div className="pt-[92px]"><CancellationContant /></div>} />
-        <Route path="/terms-header" element={<div className="pt-[92px]"><TermsHeader /><TermsContant /></div>} />
+        <Route path="/terms_conditions" element={<div className="pt-[92px]"><TermsHeader /><TermsContant /></div>} />
       </Routes>
 
       <Footer />

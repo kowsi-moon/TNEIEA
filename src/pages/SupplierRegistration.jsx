@@ -378,7 +378,7 @@ onClick={() => {
           <p className="text-gray-600 mt-2 text-sm">
             {popupType === "success"
               ? "Registration completed successfully."
-              : "Something went wrong. Please try again."}
+              : "contact number alredy exists"}
           </p>
 
           <button
