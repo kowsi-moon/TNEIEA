@@ -25,6 +25,7 @@ const [formData, setFormData] = useState({
   gstNo: "",
   Address: "",
   state: "",
+  stateName: "",
   city: "",
   pincode: "",
   bloodGroup: "",
@@ -290,7 +291,7 @@ if (extraPhotos.photo3) {
   data.append("gstno", formData.gstNo);
   data.append("address", formData.Address);
 
-  data.append("state", formData.state);
+  data.append("state", formData.stateName);
   data.append("city", formData.city);
   data.append("pincode", formData.pincode);
 
@@ -1198,17 +1199,27 @@ ${
   <select
     name="state"
     value={formData.state}
-    onChange={(e) => {
-      const selectedStateId = e.target.value;
+   onChange={(e) => {
+  const selectedStateId = e.target.value;
 
-      setFormData({
-        ...formData,
-        state: selectedStateId,
-        city: "",
-      });
+  const selectedState = states.find(
+    (state) => String(state.id) === selectedStateId
+  );
 
-      getCities(selectedStateId);
-    }}
+  setFormData({
+    ...formData,
+    state: selectedStateId,
+    stateName: selectedState?.name || "",
+    city: "",
+  });
+
+  setValidationErrors({
+    ...validationErrors,
+    state: "",
+  });
+
+  getCities(selectedStateId);
+}}
     className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500 accent-red-500
 ${
   validationErrors.state

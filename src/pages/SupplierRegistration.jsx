@@ -209,7 +209,7 @@ if (Object.keys(errors).length > 0) {
       form.append("qualification", formData.qualification);
       form.append("gstno", formData.gstNo);
       form.append("address", formData.registeredAddress);
-      form.append("state", formData.state);
+      form.append("state", formData.stateName);
       form.append("city", formData.city);
       form.append("pincode", formData.pincode);
       form.append("bloodgroup", formData.bloodGroup);
@@ -252,28 +252,31 @@ if (data.result) {
   setShowPopup(true);
 
   setFormData({
-    supplierName: "",
-    supplierType: [],
-    ownership: "",
-    category: [],
-    licenseNumber: "",
-    companyName: "",
-    idProof: "",
-    qualification: "",
-    gstNo: "",
-    registeredAddress: "",
-    state: "",
-    city: "",
-    pincode: "",
-    bloodGroup: "",
-    dob: "",
-    contactNumber: "",
-    alternateContactNumber: "",
-    mailId: "",
-    photo: null,
-    logo: null,
-    idProofDoc: null,
-  });
+  supplierName: "",
+  supplierType: [],
+  ownership: "",
+  category: [],
+  licenseNumber: "",
+  companyName: "",
+  idProof: "",
+  qualification: "",
+  gstNo: "",
+  registeredAddress: "",
+
+  state: "",
+  stateName: "",
+
+  city: "",
+  pincode: "",
+  bloodGroup: "",
+  dob: "",
+  contactNumber: "",
+  alternateContactNumber: "",
+  mailId: "",
+  photo: null,
+  logo: null,
+  idProofDoc: null,
+});
 
 } else {
 
@@ -1102,35 +1105,44 @@ ${
   </label>
 
  <select
-  name="state"
-  value={formData.state}
-  onChange={(e) => {
-    const selectedStateId = e.target.value;
+    name="state"
+    value={formData.state}
+   onChange={(e) => {
+  const selectedStateId = e.target.value;
 
-    setFormData({
-      ...formData,
-      state: selectedStateId,
-      city: "",
-    });
+  const selectedState = states.find(
+    (state) => String(state.id) === selectedStateId
+  );
 
-    getCities(selectedStateId);
-  }}
-  size={1}
- className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500 accent-red-500
+  setFormData({
+    ...formData,
+    state: selectedStateId,
+    stateName: selectedState?.name || "",
+    city: "",
+  });
+
+  setValidationErrors({
+    ...validationErrors,
+    state: "",
+  });
+
+  getCities(selectedStateId);
+}}
+    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500 accent-red-500
 ${
   validationErrors.state
     ? "border-red-500"
     : "border-gray-300"
 }`}
 >
-  <option value="">Select State</option>
+    <option value="">Select State</option>
 
-  {states.map((state) => (
-    <option key={state.id} value={state.id}>
-      {state.name}
-    </option>
-  ))}
-</select>
+    {states.map((state) => (
+      <option key={state.id} value={state.id}>
+        {state.name}
+      </option>
+    ))}
+  </select>
 {validationErrors.state && (
   <p className="text-red-500 text-sm mt-1">
     {validationErrors.state}

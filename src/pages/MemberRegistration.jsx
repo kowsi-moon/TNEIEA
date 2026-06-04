@@ -19,26 +19,29 @@ const [idProofDoc, setIdProofDoc] = useState(null);
 const [showPopup, setShowPopup] = useState(false);
 const [popupType, setPopupType] = useState(""); 
 const [formData, setFormData] = useState({
-    memberNo: "",
-    memberName: "",
-    memberType: "",
-    ownership: "",
-    licenseNumber: "",
-    companyName: "",
-    idProof: "",
-    qualification: "",
-    gstNo: "",
-    permanentAddress: "",
-    communicationAddress: "",
-    state: "",
-    city: "",
-    pincode: "",
-    bloodGroup: "",
-    dob: "",
-    contactNumber: "",
-    alternateContactNumber: "",
-    mailId: "",
-  });
+  memberNo: "",
+  memberName: "",
+  memberType: "",
+  ownership: "",
+  licenseNumber: "",
+  companyName: "",
+  idProof: "",
+  qualification: "",
+  gstNo: "",
+  permanentAddress: "",
+  communicationAddress: "",
+
+  state: "",      
+  stateName: "",  
+
+  city: "",
+  pincode: "",
+  bloodGroup: "",
+  dob: "",
+  contactNumber: "",
+  alternateContactNumber: "",
+  mailId: "",
+});
 
   const [dropdownOpen, setDropdownOpen] = useState({
   memberType: false,
@@ -221,7 +224,7 @@ if (Object.keys(errors).length > 0) {
     data.append("gstno", formData.gstNo);
     data.append("paddress", formData.permanentAddress);
     data.append("caddress", formData.communicationAddress);
-    data.append("state", formData.state);
+    data.append("state", formData.stateName);
     data.append("city", formData.city);
     data.append("pincode", formData.pincode);
     data.append("bloodgroup", formData.bloodGroup);
@@ -272,28 +275,30 @@ data.append("dob", formattedDate);
       
 
       // reset
-      setFormData({
-        memberNo: "",
-        memberName: "",
-        memberType: "",
-        ownership: "",
-        licenseNumber: "",
-        companyName: "",
-        idProof: "",
-        qualification: "",
-        gstNo: "",
-        permanentAddress: "",
-        communicationAddress: "",
-        state: "",
-        city: "",
-        pincode: "",
-        bloodGroup: "",
-        dob: "",
-        contactNumber: "",
-        alternateContactNumber: "",
-        mailId: "",
-      });
+     setFormData({
+  memberNo: "",
+  memberName: "",
+  memberType: "",
+  ownership: "",
+  licenseNumber: "",
+  companyName: "",
+  idProof: "",
+  qualification: "",
+  gstNo: "",
+  permanentAddress: "",
+  communicationAddress: "",
 
+  state: "",
+  stateName: "",
+
+  city: "",
+  pincode: "",
+  bloodGroup: "",
+  dob: "",
+  contactNumber: "",
+  alternateContactNumber: "",
+  mailId: "",
+});
       setPhoto(null);
       setExtraPhotos({ photo1: null, photo2: null,photo3: null });
       setLicenseDoc(null);
@@ -375,7 +380,7 @@ onClick={() => {
           </button>
 
           <div className="w-16 h-16 mx-auto flex items-center justify-center">
-  {popupType === "success" ? (
+  { popupType === "success" ? (
     <img
       src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
       alt="success"
@@ -1108,30 +1113,37 @@ ${
     State <span className="text-red-500">*</span>
   </label>
 
-  <select
+ <select
     name="state"
     value={formData.state}
-    onChange={(e) => {
-      const selectedStateId = e.target.value;
-      setValidationErrors({
-  ...validationErrors,
-  state: "",
-});
+   onChange={(e) => {
+  const selectedStateId = e.target.value;
 
-      setFormData({
-        ...formData,
-        state: selectedStateId,
-        city: "",
-      });
+  const selectedState = states.find(
+    (state) => String(state.id) === selectedStateId
+  );
 
-      getCities(selectedStateId);
-    }}
-   className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500 accent-red-500
+  setFormData({
+    ...formData,
+    state: selectedStateId,
+    stateName: selectedState?.name || "",
+    city: "",
+  });
+
+  setValidationErrors({
+    ...validationErrors,
+    state: "",
+  });
+
+  getCities(selectedStateId);
+}}
+    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500 accent-red-500
 ${
   validationErrors.state
     ? "border-red-500"
     : "border-gray-300"
-}`}>
+}`}
+>
     <option value="">Select State</option>
 
     {states.map((state) => (
