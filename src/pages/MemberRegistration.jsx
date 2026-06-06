@@ -60,9 +60,14 @@ const [validationErrors, setValidationErrors] = useState({});
 
 
   const [successMessage, setSuccessMessage] = useState("");
-
+   const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registeredMember, setRegisteredMember] = useState({
+  memberId: "",
+  memberName: "",
+});
   const handleChange = (e) => {
   const { name, value } = e.target;
+ 
 
   setFormData({
     ...formData,
@@ -205,9 +210,60 @@ if (!formData.mailId.trim()) {
   errors.mailId = "Please enter email";
 }
 
+if (photo && photo.size > 3 * 1024 * 1024) {
+  errors.photo = "File size should not exceed 3 MB";
+}
+
+if (licenseDoc && licenseDoc.size > 3 * 1024 * 1024) {
+  errors.licenseDoc = "File size should not exceed 3 MB";
+}
+
+if (idProofDoc && idProofDoc.size > 3 * 1024 * 1024) {
+  errors.idProofDoc = "File size should not exceed 3 MB";
+}
+// setValidationErrors(errors);
+
+// if (Object.keys(errors).length > 0) {
+//   return;
+// }
+
+if (!formData.mailId.trim()) {
+  errors.mailId = "Please enter email";
+}
+
 setValidationErrors(errors);
 
 if (Object.keys(errors).length > 0) {
+
+  const firstErrorField = Object.keys(errors)[0];
+
+  let element =
+    document.querySelector(`[name="${firstErrorField}"]`) ||
+    document.getElementById(firstErrorField);
+
+  if (firstErrorField === "idProofDoc") {
+    element = document.getElementById("idProofDocContainer");
+  }
+
+  if (firstErrorField === "licenseDoc") {
+    element = document.getElementById("licenseDocContainer");
+  }
+
+  if (firstErrorField === "photo") {
+    element = document.getElementById("photoContainer");
+  }
+
+  if (element) {
+   window.scrollTo({
+  top: element.offsetTop - 120,
+  behavior: "smooth",
+});
+
+    if (typeof element.focus === "function") {
+      element.focus();
+    }
+  }
+
   return;
 }
 
@@ -267,11 +323,18 @@ data.append("dob", formattedDate);
     console.log("SUCCESS RESPONSE:", response.data);
 
    
-    if (response.data.result === true) {
-      setPopupType("success");
-      setShowPopup(true);
+    // if (response.data.result === true) {
+    //   setPopupType("success");
+    //   setShowPopup(true);
 
+if (response.data.result === true) {
 
+  setRegisteredMember({
+    memberId: formData.memberNo,
+    memberName: formData.memberName,
+  });
+
+  setRegistrationSuccess(true);
       
 
       // reset
@@ -354,77 +417,88 @@ if (response.data.result === false) {
 }
 };
 
+if (registrationSuccess) {
+  return (
+  <section className="fixed inset-0 flex flex-col items-center justify-center bg-[#f5f7fb] px-4 z-50 overflow-hidden">
 
+      <div className="bg-white rounded-3xl shadow-xl p-10 max-w-xl w-full text-center border border-gray-100">
 
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+          alt="success"
+          className="w-24 h-24 mx-auto mb-5"
+        />
+
+        <h2 className="text-4xl font-bold text-green-600 mb-3">
+          Successfully Registered
+        </h2>
+
+        <p className="text-gray-600 text-lg mb-8">
+          Your membership registration has been submitted successfully.
+        </p>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-lg">
+            <div>
+              <strong>Member ID :</strong> {registeredMember.memberId}
+            </div>
+
+            <div>
+              <strong>Member Name :</strong> {registeredMember.memberName}
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5 shadow-sm">
+          <p className="text-blue-800 font-semibold text-base leading-7">
+             Registration completed successfully.
+            <br />
+            Our Admin Team will review your application and contact you shortly
+            regarding the next steps of your membership process.
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        onClick={() => navigate("/")}
+        className="mt-6 bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-xl font-semibold shadow-lg transition"
+      >
+        Back To Home
+      </button>
+
+    </section>
+  );
+}
   return (
     
   <>
  
  
     {/* POPUP */}
-    {showPopup && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-        <div className="bg-white w-[90%] max-w-[320px] rounded-xl p-5 sm:p-6 text-center shadow-lg relative">
+  {showPopup && popupType === "error" && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+    <div className="bg-white w-[90%] max-w-[320px] rounded-xl p-6 text-center">
 
-          <button
-onClick={() => {
-  setShowPopup(false);
+      <h3 className="text-red-600 text-xl font-bold mb-3">
+        Error
+      </h3>
 
-  if (popupType === "success") {
-    navigate("/");
-  }
-}}
-            className="absolute top-2 right-3 text-gray-400 text-xl"
-          >
-            ✕
-          </button>
+      <p className="text-gray-600">
+        {popupMessage}
+      </p>
 
-          <div className="w-16 h-16 mx-auto flex items-center justify-center">
-  { popupType === "success" ? (
-    <img
-      src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
-      alt="success"
-      className="w-16 h-16"
-    />
-  ) : (
-    <img
-      src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
-      alt="error"
-      className="w-16 h-16"
-    />
-  )}
-</div>
+      <button
+        onClick={() => setShowPopup(false)}
+        className="mt-5 bg-red-600 text-white px-5 py-2 rounded-lg"
+      >
+        OK
+      </button>
 
-          <h2 className="mt-4 text-xl font-semibold">
-            {popupType === "success" ? "Success!" : "Error!"}
-          </h2>
-
-          <p className="text-gray-600 mt-2 text-sm">
-  {popupType === "success"
-    ? "Registration completed successfully."
-    : popupMessage}
-</p>
-
-          <button
-  onClick={() => {
-    setShowPopup(false);
-
-    if (popupType === "success") {
-      navigate("/");
-    }
-  }}
-            className={`mt-5 px-6 py-2 rounded-full border ${
-              popupType === "success"
-                ? "border-green-500 text-green-600"
-                : "border-red-500 text-red-600"
-            }`}
-          >
-           {popupType === "success" ? "OK" : "TRY AGAIN"}
-          </button>
-
-        </div>
-      </div>
-    )}
+    </div>
+  </div>
+)}
+    
 
        
     <section className="w-full min-h-screen bg-[#f5f7fb] py-10 px-2 sm:px-4 md:px-6 lg:px-8 overflow-hidden">
@@ -595,17 +669,14 @@ ${
   </div>
 
     {/* Row 2 */}
-<div>
+<div id="photoContainer">
   <label className="text-sm font-semibold text-black">
     Authorised Person 1 <span className="text-red-600">*</span>
   </label>
 
-  <label className={`mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer
-${
-  validationErrors.photo
-    ? "border-red-500"
-    : "border-gray-300"
-}`}>
+  <label className="mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer">
+
+
 
   
     <span className="bg-gray-100 px-4 py-3 text-sm border-r border-gray-300">
@@ -613,13 +684,34 @@ ${
     </span>
 
     <span className="px-4 text-sm text-gray-600 truncate flex-1">
-      {photo ? photo.name : "No file chosen"}
+      {photo ? photo.name : "Upload Photo"}
     </span>
 
     <input
+      id="photo"  
       type="file"
+      placeholder="Upload Photo"
       accept=".jpg,.jpeg,.png"
-      onChange={(e) => setPhoto(e.target.files[0])}
+    onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      photo: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo: "",
+  }));
+
+  setPhoto(file);
+}}
       className="hidden"
       
     />
@@ -632,7 +724,7 @@ ${
 )}
 
   <p className="text-xs text-gray-500 mt-1">
-    Allowed: JPG, JPEG, PNG | Max size: 2 MB
+    Allowed: JPG, JPEG, PNG | Max size: 3 MB
   </p>
 </div>
 
@@ -735,27 +827,54 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo1
             ? extraPhotos.photo1.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
+          id="photo1"
           type="file"
+          placeholder="Upload Photo"
           accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo1: e.target.files[0],
-            })
-          }
+        onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      photo1: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo1: "",
+  }));
+
+  setExtraPhotos({
+    ...extraPhotos,
+    photo1: file,
+  });
+}}
+
+
           className="hidden"
         />
       </label>
         
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
+      {validationErrors.photo1 && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo1}
+  </p>
+)}
     </div>
+    
 
     <div>
       <label className="text-sm font-semibold text-black">
@@ -770,26 +889,50 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo2
             ? extraPhotos.photo2.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
+          id="photo2"
+          placeholder="Upload Photo"
           type="file"
           accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo2: e.target.files[0],
-            })
-          }
+      onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      photo2: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo2: "",
+  }));
+
+  setExtraPhotos({
+    ...extraPhotos,
+    photo2: file,
+  });
+}}
           className="hidden"
         />
       </label>
 
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
+     {validationErrors.photo2 && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo2}
+  </p>
+)}
     </div>
 
     <div>
@@ -805,26 +948,51 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo3
             ? extraPhotos.photo3.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
+          id="photo3"
           type="file"
+          placeholder="Upload Photo"
           accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo3: e.target.files[0],
-            })
-          }
+          placeholder="Upload Photo"
+      onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      photo3: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo3: "",
+  }));
+
+  setExtraPhotos({
+    ...extraPhotos,
+    photo3: file,
+  });
+}}
           className="hidden"
         />
       </label>
 
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
+{validationErrors.photo3 && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo3}
+  </p>
+)}
     </div>
   </>
 )}
@@ -836,6 +1004,7 @@ ${
   <input
     type="text"
     name="licenseNumber"
+    placeholder="Eg: 1234567890"
     value={formData.licenseNumber}
     onChange={(e) => {
       const value = e.target.value.replace(/\D/g, "");
@@ -862,17 +1031,41 @@ ${
 
   {/* Row 4 */}
   <div>
-    <label className="text-sm font-semibold text-black">
+   <label
+  
+  id="licenseDocContainer"
+  className={`className="text-sm font-semibold text-black"`}
+>
       License Document <span className="text-red-600">*</span>
     </label>
 
     <div className="mt-2 border border-gray-300 rounded-sm overflow-hidden">
 
       <input
+        id="licenseDoc"
         type="file"
         accept=".pdf"
         required
-        onChange={(e) => setLicenseDoc(e.target.files[0])}
+      onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      licenseDoc: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    licenseDoc: "",
+  }));
+
+  setLicenseDoc(file);
+}}
        className={`w-full text-sm file:bg-gray-100 file:border-0 file:px-4 file:py-3 file:mr-4
 ${
   validationErrors.licenseDoc
@@ -888,7 +1081,7 @@ ${
   </p>
 )}
     <p className="text-xs text-gray-500 mt-1">
-      Allowed: PDF | Max size: 2 MB
+      Allowed: PDF | Max size: 3 MB
     </p>
   </div>
 
@@ -928,7 +1121,7 @@ ${
              <input
   type="text"
   name="idProof"
-  placeholder="Enter ID Proof"
+  placeholder="Aadhar Card / PAN Card "
   value={formData.idProof}
   onChange={handleChange}
   required
@@ -950,19 +1143,22 @@ ${
 
   {/* Row 5 */}
 <div>
-  <label className="text-sm font-semibold text-black">
+  <label
+  className="text-sm font-semibold text-black"
+>
     ID Proof Document <span className="text-red-600">*</span>
   </label>
 
   {/* File box */}
-  <label
-    className={`mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer
-    ${
-      validationErrors.idProofDoc
-        ? "border-red-500"
-        : "border-gray-300"
-    }`}
-  >
+<label
+  id="idProofDocContainer"
+  className={`mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer
+  ${
+    validationErrors.idProofDoc
+      ? "border-red-500"
+      : "border-gray-300"
+  }`}
+>
     {/* Button */}
     <span className="bg-gray-100 px-4 py-3 text-sm border-r border-gray-300">
       Choose File
@@ -975,23 +1171,41 @@ ${
 
     {/* Hidden input */}
     <input
+      id="idProofDoc"
       type="file"
       accept=".pdf"
       required
       className="hidden"
       onChange={(e) => {
-        setIdProofDoc(e.target.files[0]);
+       const file = e.target.files[0];
 
-        setValidationErrors({
-          ...validationErrors,
-          idProofDoc: "",
-        });
+if (file && file.size > 3 * 1024 * 1024) {
+  setValidationErrors((prev) => ({
+    ...prev,
+    idProofDoc: "File size should not exceed 3 MB",
+  }));
+
+  e.target.value = "";
+  return;
+}
+
+// setValidationErrors((prev) => ({
+//   ...prev,
+//   idProofDoc: "",  
+// }));
+
+setValidationErrors((prev) => ({
+  ...prev,
+  idProofDoc: "",
+}));
+
+setIdProofDoc(file);
       }}
     />
   </label>
 
   <p className="text-xs text-gray-500 mt-1">
-    Allowed: PDF | Max size: 2 MB
+    Allowed: PDF | Max size: 3 MB
   </p>
 
   {validationErrors.idProofDoc && (

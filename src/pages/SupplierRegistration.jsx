@@ -46,7 +46,12 @@ const [cities, setCities] = useState([]);
 const [errorMessages, setErrorMessages] = useState({});
 const [validationErrors, setValidationErrors] = useState({})
 const [successMessage, setSuccessMessage] = useState("");
-    
+
+const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
+const [registeredSupplier, setRegisteredSupplier] = useState({
+  supplierName: "",
+});
 
     useEffect(() => {
   getStates();
@@ -179,6 +184,28 @@ if (!formData.mailId.trim()) {
 setValidationErrors(errors);
 
 if (Object.keys(errors).length > 0) {
+
+  const firstErrorField = Object.keys(errors)[0];
+
+  let element =
+    document.querySelector(`[name="${firstErrorField}"]`) ||
+    document.getElementById(firstErrorField);
+
+  if (firstErrorField === "photo") {
+    element = document.getElementById("photoContainer");
+  }
+
+  if (firstErrorField === "idProofDoc") {
+    element = document.getElementById("idProofDocContainer");
+  }
+
+  if (element) {
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
+
   return;
 }
     const today = new Date().toISOString().split("T")[0];
@@ -219,12 +246,15 @@ if (Object.keys(errors).length > 0) {
       form.append("email", formData.mailId);
 
       //  SUPPLIER ONLY
-  formData.supplierType.forEach((item) => {
-    form.append("suppliertype[]", item);
-  });
-  formData.category.forEach((item) => {
-    form.append("categoryid[]", item);
-  });
+form.append(
+  "suppliertype",
+  formData.supplierType.join(",")
+);
+
+form.append(
+  "categoryid",
+  formData.category.join(",")
+);
 
      
       // FILES
@@ -248,8 +278,11 @@ console.log(data);
 
 if (data.result) {
 
-  setPopupType("success");
-  setShowPopup(true);
+  setRegisteredSupplier({
+    supplierName: formData.supplierName,
+  });
+
+  setRegistrationSuccess(true);
 
   setFormData({
   supplierName: "",
@@ -280,16 +313,37 @@ if (data.result) {
 
 } else {
 
-  console.log(data);
+  const msg = (data.message || "").toLowerCase();
 
-  setPopupType("error");
-  setShowPopup(true);
+  if (msg.includes("contact")) {
+    alert("Contact Number already exists");
+  } 
+  else if (msg.includes("email")) {
+    alert("Email already exists");
+  } 
+  else {
+    alert(data.message || "Registration failed");
+  }
+
 
 }
     } catch (err) {
-      console.error(err);
-      alert("Error submitting form");
-    }
+  console.error(err);
+
+  if (
+    err?.response?.data?.message?.toLowerCase().includes("contact")
+  ) {
+    alert("Contact Number already exists");
+  } 
+  else if (
+    err?.response?.data?.message?.toLowerCase().includes("email")
+  ) {
+    alert("Email already exists");
+  } 
+  else {
+    alert("Error submitting form");
+  }
+}
   };
 
   const supplierTypes = [
@@ -338,9 +392,55 @@ if (data.result) {
     return `${d}-${m}-${y}`;
   };
 
+  if (registrationSuccess) {
+  return (
+    <section className="fixed inset-0 flex flex-col items-center justify-center bg-[#f5f7fb] px-4 z-50 overflow-hidden">
+
+      <div className="bg-white rounded-3xl shadow-xl p-10 max-w-xl w-full text-center border border-gray-100">
+
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+          alt="success"
+          className="w-24 h-24 mx-auto mb-5"
+        />
+
+        <h2 className="text-4xl font-bold text-green-600 mb-3">
+          Successfully Registered
+        </h2>
+
+        <p className="text-gray-600 text-lg mb-8">
+          Your supplier registration has been submitted successfully.
+        </p>
+
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
+          <strong>Supplier Name :</strong>{" "}
+          {registeredSupplier.supplierName}
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5 shadow-sm">
+          <p className="text-blue-800 font-semibold text-base leading-7">
+            Registration completed successfully.
+            <br />
+            Our Admin Team will review your application and contact you shortly.
+          </p>
+        </div>
+
+      </div>
+
+      <button
+        onClick={() => navigate("/")}
+        className="mt-6 bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-xl font-semibold shadow-lg transition"
+      >
+        Back To Home
+      </button>
+
+    </section>
+  );
+}
+
     return (
        <>
-    {/* POPUP */}
+    {/* POPUP
     {showPopup && (
       <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-[9999]">
         <div className="bg-white w-[90%] max-w-[320px] rounded-xl p-5 sm:p-6 text-center shadow-lg relative">
@@ -403,7 +503,7 @@ onClick={() => {
 
         </div>
       </div>
-    )}
+    )} */}
 
       <section className="w-full min-h-screen bg-[#f5f7fb] py-10 px-2 sm:px-4 md:px-6 lg:px-8 overflow-hidden">
 
@@ -628,8 +728,11 @@ ${
     </div>
 
     {/* Authorised Person */}
-    <div>
-      <label className="text-sm font-semibold text-black">
+   <div
+  id="photoContainer"
+  className={validationErrors.photo ? "scroll-mt-32" : ""}
+>
+  <label className="text-sm font-semibold text-black">
     Authorised Person 1 <span className="text-red-600">*</span>
   </label>
 
@@ -644,18 +747,36 @@ ${
     </span>
 
     <span className="px-4 text-sm text-gray-600 truncate flex-1">
-      {formData.photo ? formData.photo.name : "No file chosen"}
+      {formData.photo ? formData.photo.name : "Upload Photo"}
     </span>
 
     <input
-      type="file"
-      accept=".jpg,.jpeg,.png"
-     onChange={(e) =>
+      id="photo"
+  name="photo"
+  type="file"
+  accept=".jpg,.jpeg,.png"
+   onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      photo: "File size should not exceed 3 MB",
+    }));
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo: "",
+  }));
+
   setFormData({
     ...formData,
-    photo: e.target.files[0],
-  })
-}
+    photo: file,
+  });
+}}
       className="hidden"
     />
   
@@ -667,7 +788,7 @@ ${
 )}
 
   <p className="text-xs text-gray-500 mt-2">
-    Allowed: JPG, JPEG, PNG | Max size: 2 MB
+    Allowed: JPG, JPEG, PNG | Max size: 3 MB
   </p>
     </div>
 
@@ -772,24 +893,47 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo1
             ? extraPhotos.photo1.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
-          type="file"
-          accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo1: e.target.files[0],
-            })
-          }
+          id="photo"
+  name="photo"
+  type="file"
+  accept=".jpg,.jpeg,.png"
+        onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+     photo1: "File size should not exceed 3 MB",
+    }));
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo: "",
+  }));
+
+setExtraPhotos({
+  ...extraPhotos,
+  photo1: file,
+});
+}}
           className="hidden"
         />
       </label>
+      {validationErrors.photo && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo}
+  </p>
+)}
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
     </div>
 
@@ -806,24 +950,47 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo2
             ? extraPhotos.photo2.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
+          id="photo2"
+          name="photo2"
           type="file"
           accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo2: e.target.files[0],
-            })
-          }
+        onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+     photo2: "File size should not exceed 3 MB",
+    }));
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo: "",
+  }));
+
+ setExtraPhotos({
+  ...extraPhotos,
+  photo2: file,
+});
+}}
           className="hidden"
         />
       </label>
+      {validationErrors.photo && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo}
+  </p>
+)}
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
     </div>
 
@@ -840,24 +1007,47 @@ ${
         <span className="px-4 text-sm text-gray-600 truncate flex-1">
           {extraPhotos.photo3
             ? extraPhotos.photo3.name
-            : "No file chosen"}
+            : "Upload Photo"}
         </span>
 
         <input
+          id="photo3"
+          name="photo3"
           type="file"
           accept=".jpg,.jpeg,.png"
-          onChange={(e) =>
-            setExtraPhotos({
-              ...extraPhotos,
-              photo3: e.target.files[0],
-            })
-          }
+         onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+     photo3: "File size should not exceed 3 MB"
+    }));
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    photo: "",
+  }));
+
+  setExtraPhotos({
+  ...extraPhotos,
+  photo3: file,
+});
+}}
           className="hidden"
         />
       </label>
+      {validationErrors.photo3 && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.photo3}
+  </p>
+)}
 
       <p className="text-xs text-gray-500 mt-1">
-        Allowed: JPG, JPEG, PNG | Max size: 2 MB
+        Allowed: JPG, JPEG, PNG | Max size: 3 MB
       </p>
     </div>
   </>
@@ -908,18 +1098,40 @@ ${
   <input
     type="file"
     accept=".jpg,.jpeg,.png"
-  onChange={(e) =>
+ onChange={(e) => {
+  const file = e.target.files[0];
+
+ if (file && file.size > 3 * 1024 * 1024) {
+  setValidationErrors((prev) => ({
+    ...prev,
+    logo: "File size should not exceed 3 MB",
+  }));
+
+  e.target.value = "";
+  return;
+}
+
+setValidationErrors((prev) => ({
+  ...prev,
+  logo: "",
+}));
+
   setFormData({
     ...formData,
-    logo: e.target.files[0],
-  })
-}
+    logo: file,
+  });
+}}
     className="hidden"
   />
 </label>
+{validationErrors.logo && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.logo}
+  </p>
+)}
 
 <p className="text-[12px] text-gray-600 mt-1">
-  Allowed: JPG, JPEG, PNG | Max size: 2 MB
+  Allowed: JPG, JPEG, PNG | Max size: 3 MB
 </p>
     </div>
 
@@ -933,7 +1145,7 @@ ${
              <input
   type="text"
   name="idProof"
-  placeholder="Enter ID Proof"
+  placeholder="Aadhar Card / PAN Card "
   value={formData.idProof}
   onChange={handleChange}
   required
@@ -960,7 +1172,9 @@ ${
   </label>
 
   {/* File box */}
-  <label className={`mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer
+  <label
+  id="idProofDocContainer"
+  className={`mt-2 flex items-center border rounded-lgoverflow-hidden cursor-pointer
 ${
   validationErrors.idProofDoc
     ? "border-red-500"
@@ -986,12 +1200,28 @@ ${
   required
   className="hidden"
  
- onChange={(e) =>
+ onChange={(e) => {
+  const file = e.target.files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      idProofDoc: "File size should not exceed 3 MB",
+    }));
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    idProofDoc: "",
+  }));
+
   setFormData({
     ...formData,
-    idProofDoc: e.target.files[0],
-  })
-}
+    idProofDoc: file,
+  });
+}}
 />
   </label>
   {validationErrors.idProofDoc && (

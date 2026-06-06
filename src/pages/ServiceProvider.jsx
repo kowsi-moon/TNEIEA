@@ -55,6 +55,7 @@ const [popupType, setPopupType] = useState("");
 const [extraPhotos, setExtraPhotos] = useState({
   photo1: null,
   photo2: null,
+  photo3: null,
 });
 
 const ServiceProvidertype = [
@@ -163,9 +164,27 @@ const handleChange = (e) => {
 const handleFileChange = (e) => {
   const { name, files } = e.target;
 
+  const file = files[0];
+
+  if (file && file.size > 3 * 1024 * 1024) {
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: "File size should not exceed 3 MB",
+    }));
+
+    e.target.value = "";
+    return;
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    [name]: "",
+  }));
+
   setFormData({
     ...formData,
-    [name]: files[0],
+    [name]: file,
   });
 };
 
@@ -254,13 +273,37 @@ if (!formData.mailId.trim()) {
 setValidationErrors(errors);
 
 if (Object.keys(errors).length > 0) {
+
+  const firstErrorField = Object.keys(errors)[0];
+
+  let element =
+    document.querySelector(`[name="${firstErrorField}"]`) ||
+    document.getElementById(firstErrorField);
+
+  if (firstErrorField === "photo") {
+    element = document.getElementById("photoContainer");
+  }
+
+  if (firstErrorField === "idProofDoc") {
+    element = document.getElementById("idProofDocContainer");
+  }
+
+  if (element) {
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+  }
+
   return;
-}  
+}
 
 
   const data = new FormData();
 
   data.append("type", "serviceprovider");
+ data.append("suppliertype", "serviceprovider");
+ 
   selectedServiceTypes.forEach((id) => {
   data.append("serviceprovidertype[]", id);
 });
@@ -313,26 +356,86 @@ const formattedDate =
 
 data.append("dob", formattedDate); 
 
+for (let pair of data.entries()) {
+  console.log(pair[0], pair[1]);
+}
+
   try {
     const res = await fetch(
-      "https://portal.tneiea.in/api/auth/register2",
-      {
-        method: "POST",
-        body: data,
-      }
-    );
+  "https://portal.tneiea.in/api/auth/register2",
+  {
+    method: "POST",
+    body: data,
+  }
+);
+
+const text = await res.text();
+
+console.log("RAW RESPONSE :", text);
+
+// if (!res.ok) {
+//   setPopupMessage(
+//     "Server Error (500). Check API response in Network tab."
+//   );
+//   setPopupType("error");
+//   setShowPopup(true);
+//   return;
+// }
+console.log("RAW RESPONSE :", text);
+
+if (text.trim().startsWith("<!DOCTYPE")) {
+  setPopupMessage("Server Error. API returned HTML instead of JSON.");
+  setPopupType("error");
+  setShowPopup(true);
+  return;
+}
 
 
-   
-     
 
-    const result = await res.json();
+const result = JSON.parse(text);
 
-    console.log(result);
+console.log("API RESULT =", result);
 
-    if (result.result) {
-      setPopupType("success");
-setShowPopup(true);
+
+if (result.result === true) {
+  setPopupMessage(result.message);
+  setPopupType("success");
+  setShowPopup(true);
+  return;
+}
+
+console.log(result);
+
+if (result.result === true) {
+
+  setPopupMessage(
+    result.message || "Registration completed successfully."
+  );
+
+  setPopupType("success");
+  setShowPopup(true);
+
+  return;
+}
+
+if (result.result === false) {
+
+  const msg = (result.message || "").toLowerCase();
+
+  if (msg.includes("contact")) {
+    setPopupMessage("Contact Number Already Taken");
+  } else if (msg.includes("email")) {
+    setPopupMessage("Email ID Already Taken");
+  } else {
+    setPopupMessage(result.message);
+  }
+
+  setPopupType("error");
+  setShowPopup(true);
+  return;
+
+
+
       
 
       // reset form
@@ -363,27 +466,32 @@ setShowPopup(true);
       });
     }
 
-    if (result.result === false) {
+if (result.result === false) {
 
-  if (result.message?.contactno) {
+  const msg = (result.message || "").toLowerCase();
+
+  if (msg.includes("contact")) {
     setPopupMessage("Contact Number Already Taken");
-    setPopupType("error");
-    setShowPopup(true);
-    return;
+  } else if (msg.includes("email")) {
+    setPopupMessage("Email ID Already Taken");
+  } else {
+    setPopupMessage(result.message);
   }
 
-  if (result.message?.email) {
-    setPopupMessage("Email ID Already Taken");
-    setPopupType("error");
-    setShowPopup(true);
-    return;
-  }
+  setPopupType("error");
+  setShowPopup(true);
+  return;
 }
-  } catch (err) {
-    console.error(err);
-    setPopupType("error");
-setShowPopup(true);
-  }
+  }catch (err) {
+  console.error(err);
+
+  setPopupMessage(
+    err?.message || "Something went wrong"
+  );
+
+  setPopupType("error");
+  setShowPopup(true);
+}
 };
 
 
@@ -428,12 +536,9 @@ onClick={() => {
             {popupType === "success" ? "Success!" : "Error!"}
           </h2>
 
-        <p className="text-gray-600 mt-2 text-sm">
-  {popupType === "success"
-    ? "Registration completed successfully."
-    : popupMessage}
+     <p className="text-gray-600 mt-2 text-sm">
+  {popupMessage}
 </p>
-
           <button
   onClick={() => {
     setShowPopup(false);
@@ -866,7 +971,7 @@ ${
            <span className="px-4 text-sm text-gray-600 truncate flex-1">
              {extraPhotos.photo1
                ? extraPhotos.photo1.name
-               : "No file chosen"}
+               : "uploald photo"}
            </span>
    
            <input
@@ -883,7 +988,7 @@ ${
          </label>
    
          <p className="text-xs text-gray-500 mt-1">
-           Allowed: JPG, JPEG, PNG | Max size: 2 MB
+           Allowed: JPG, JPEG, PNG | Max size: 3 MB
          </p>
        </div>
    
@@ -900,7 +1005,7 @@ ${
            <span className="px-4 text-sm text-gray-600 truncate flex-1">
              {extraPhotos.photo2
                ? extraPhotos.photo2.name
-               : "No file chosen"}
+               : "upload photo"}
            </span>
    
            <input
@@ -917,7 +1022,7 @@ ${
          </label>
    
          <p className="text-xs text-gray-500 mt-1">
-           Allowed: JPG, JPEG, PNG | Max size: 2 MB
+           Allowed: JPG, JPEG, PNG | Max size: 3 MB
          </p>
        </div>
    
@@ -934,7 +1039,7 @@ ${
            <span className="px-4 text-sm text-gray-600 truncate flex-1">
              {extraPhotos.photo3
                ? extraPhotos.photo3.name
-               : "No file chosen"}
+               : "upload photo"}
            </span>
    
            <input
@@ -951,7 +1056,7 @@ ${
          </label>
    
          <p className="text-xs text-gray-500 mt-1">
-           Allowed: JPG, JPEG, PNG | Max size: 2 MB
+           Allowed: JPG, JPEG, PNG | Max size: 3 MB
          </p>
        </div>
      </>
@@ -959,9 +1064,9 @@ ${
 
 
   {/* Row 3 */}
-  <div>
- <label className="text-sm font-semibold text-black">
-  Authorised Person 1 <span className="text-red-600">*</span>
+  <div id="photoContainer">
+  <label className="text-sm font-semibold text-black">
+    Authorised Person 1<span className="text-red-600">*</span>
 </label>
 
 <label className={`mt-2 flex items-center border rounded-lg overflow-hidden cursor-pointer
@@ -975,7 +1080,7 @@ ${
   </span>
 
   <span className="px-4 text-sm text-gray-600 truncate flex-1">
-    {formData.photo ? formData.photo.name : "No file chosen"}
+    {formData.photo ? formData.photo.name : "upload photo"}
   </span>
 
   <input
@@ -993,7 +1098,7 @@ ${
 )}
 
 <p className="text-xs text-gray-500 mt-1">
-  Allowed: JPG, JPEG, PNG | Max size: 2 MB
+  Allowed: JPG, JPEG, PNG | Max size: 3 MB
 </p>
 </div>
 
@@ -1009,7 +1114,7 @@ ${
     </span>
 
     <span className="px-4 text-sm text-gray-600 truncate flex-1">
-      {formData.logo ? formData.logo.name : "No file chosen"}
+      {formData.logo ? formData.logo.name : "upload logo"}
     </span>
 
     <input
@@ -1021,8 +1126,13 @@ ${
     />
   </label>
 
+{validationErrors.logo && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.logo}
+  </p>
+)}
   <p className="text-[12px] text-gray-600 mt-1">
-    Allowed: JPG, JPEG, PNG | Max size: 2 MB
+    Allowed: JPG, JPEG, PNG | Max size: 3 MB
   </p>
 </div>
   </div>
@@ -1036,7 +1146,7 @@ ${
              <input
   type="text"
   name="idProof"
-  placeholder="Enter ID Proof"
+  placeholder="Aadhar Card/PAN Card"
   value={formData.idProof}
   onChange={handleChange}
   required
@@ -1063,7 +1173,9 @@ ${
     ID Proof Document <span className="text-red-600">*</span>
   </label>
 
-  <label className={`mt-2 flex items-center border rounded-sm overflow-hidden cursor-pointer
+  <label
+  id="idProofDocContainer"
+  className={`mt-2 flex items-center border rounded-sm overflow-hidden cursor-pointer
 ${
   validationErrors.idProofDoc
     ? "border-red-500"
@@ -1097,7 +1209,7 @@ ${
 )}
 
   <p className="text-xs text-gray-500 mt-1">
-    Allowed: PDF | Max size: 2 MB
+    Allowed: PDF | Max size: 3 MB
   </p>
 </div>
   </div>
