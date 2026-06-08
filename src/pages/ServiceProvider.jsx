@@ -42,6 +42,7 @@ const [successMessage, setSuccessMessage] = useState("");
 const [showPopup, setShowPopup] = useState(false);
 const [popupMessage, setPopupMessage] = useState("");
 const [popupType, setPopupType] = useState("");
+const [showSuccessPage, setShowSuccessPage] = useState(false);
 
   const [dropdownOpen, setDropdownOpen] = useState({
   ServiceProviderType: false,
@@ -71,6 +72,7 @@ const ServiceProvidertype = [
 ];
 
   const [selectedServiceTypes, setSelectedServiceTypes] = useState([]);
+
   const [showDropdown, setShowDropdown] = useState(false);
 
   const [states, setStates] = useState([]);
@@ -201,6 +203,7 @@ if (!formData.ServiceProviderName.trim()) {
     "Please enter service provider name";
 }
 
+
 if (selectedServiceTypes.length === 0) {
   errors.ServiceProviderType =
     "Please select service provider type";
@@ -232,8 +235,15 @@ if (!formData.qualification.trim()) {
     "Please enter qualification";
 }
 
-if (!formData.gstNo.trim()) {
-  errors.gstNo = "Please enter GST number";
+const gstRegex =
+  /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/;
+
+if (
+  formData.gstNo.trim() &&
+  !gstRegex.test(formData.gstNo.trim())
+) {
+  errors.gstNo =
+    "Enter valid GST format (Eg: 33WXYZT9876M1Z9)";
 }
 
 if (!formData.Address.trim()) {
@@ -266,8 +276,26 @@ if (!formData.contactNumber.trim()) {
     "Please enter contact number";
 }
 
+if (
+  formData.contactNumber.trim() &&
+  formData.contactNumber.length !== 10
+) {
+  errors.contactNumber =
+    "Contact number must be 10 digits";
+}
+
 if (!formData.mailId.trim()) {
   errors.mailId = "Please enter email";
+}
+
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (
+  formData.mailId.trim() &&
+  !emailRegex.test(formData.mailId)
+) {
+  errors.mailId = "Enter valid Email ID";
 }
 
 setValidationErrors(errors);
@@ -304,9 +332,14 @@ if (Object.keys(errors).length > 0) {
   data.append("type", "serviceprovider");
  data.append("suppliertype", "serviceprovider");
  
-  selectedServiceTypes.forEach((id) => {
-  data.append("serviceprovidertype[]", id);
-});
+data.append(
+  "serviceprovidertype",
+  selectedServiceTypes.join(",")
+);
+
+for (let pair of data.entries()) {
+  console.log(pair[0], pair[1]);
+}
   data.append("referenceby1", formData.referenceby1);
   data.append("referenceby2", formData.referenceby2);
 
@@ -373,14 +406,7 @@ const text = await res.text();
 
 console.log("RAW RESPONSE :", text);
 
-// if (!res.ok) {
-//   setPopupMessage(
-//     "Server Error (500). Check API response in Network tab."
-//   );
-//   setPopupType("error");
-//   setShowPopup(true);
-//   return;
-// }
+
 console.log("RAW RESPONSE :", text);
 
 if (text.trim().startsWith("<!DOCTYPE")) {
@@ -397,26 +423,15 @@ const result = JSON.parse(text);
 console.log("API RESULT =", result);
 
 
+
 if (result.result === true) {
-  setPopupMessage(result.message);
-  setPopupType("success");
-  setShowPopup(true);
+  setShowSuccessPage(true);
   return;
 }
 
 console.log(result);
 
-if (result.result === true) {
 
-  setPopupMessage(
-    result.message || "Registration completed successfully."
-  );
-
-  setPopupType("success");
-  setShowPopup(true);
-
-  return;
-}
 
 if (result.result === false) {
 
@@ -494,72 +509,79 @@ if (result.result === false) {
 }
 };
 
-
+if (showSuccessPage) {
   return (
+    <section className="fixed inset-0 flex flex-col items-center justify-center bg-[#f5f7fb] px-4 z-[99999]">
 
-     <>
-    {/* POPUP */}
-    {showPopup && (
-      <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-[9999]">
-        <div className="bg-white w-[90%] max-w-[320px] rounded-xl p-5 sm:p-6 text-center shadow-lg relative">
+      <div className="bg-white rounded-3xl shadow-xl p-10 max-w-xl w-full text-center">
 
-          <button
-onClick={() => {
-  setShowPopup(false);
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
+          alt="success"
+          className="w-24 h-24 mx-auto mb-5"
+        />
 
-  if (popupType === "success") {
-    navigate("/");
-  }
-}}
-            className="absolute top-2 right-3 text-gray-400 text-xl"
-          >
-            ✕
-          </button>
+        <h2 className="text-4xl font-bold text-green-600 mb-3">
+          Successfully Registered
+        </h2>
 
-          <div className="w-16 h-16 mx-auto flex items-center justify-center">
-  {popupType === "success" ? (
-    <img
-      src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
-      alt="success"
-      className="w-16 h-16"
-    />
-  ) : (
-    <img
-      src="https://cdn-icons-png.flaticon.com/512/1828/1828843.png"
-      alt="error"
-      className="w-16 h-16"
-    />
-  )}
-</div>
+        <p className="text-gray-600 text-lg mb-8">
+          Your service provider registration has been submitted successfully.
+        </p>
 
-          <h2 className="mt-4 text-xl font-semibold">
-            {popupType === "success" ? "Success!" : "Error!"}
-          </h2>
-
-     <p className="text-gray-600 mt-2 text-sm">
-  {popupMessage}
-</p>
-          <button
-  onClick={() => {
-    setShowPopup(false);
-
-    if (popupType === "success") {
-      navigate("/");
-    }
-  }}
-            className={`mt-5 px-6 py-2 rounded-full border ${
-              popupType === "success"
-                ? "border-green-500 text-green-600"
-                : "border-red-500 text-red-600"
-            }`}
-          >
-           {popupType === "success" ? "OK" : "TRY AGAIN"}
-          </button>
-
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
+          <strong>Service Provider Name :</strong>{" "}
+          {formData.ServiceProviderName}
         </div>
+
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5">
+          <p className="text-blue-800 font-semibold">
+            Registration completed successfully.
+            <br />
+            Our Admin Team will review your application and contact you shortly.
+          </p>
+        </div>
+
       </div>
-    )}
-   <section className="w-full min-h-screen bg-[#f5f7fb] py-10 px-2 sm:px-4 md:px-6 lg:px-8 overflow-visible">
+
+      <button
+        onClick={() => navigate("/")}
+        className="mt-6 bg-red-600 text-white px-8 py-3 rounded-xl"
+      >
+        Back To Home
+      </button>
+
+    </section>
+  );
+}
+  return (
+    <>
+    {showPopup && popupType === "error" && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-[9999]">
+
+    <div className="bg-white p-6 rounded-xl w-[350px] text-center">
+
+      <h2 className="text-red-600 text-2xl font-bold">
+        Error
+      </h2>
+
+      <p className="mt-3">
+        {popupMessage}
+      </p>
+
+      <button
+        onClick={() => setShowPopup(false)}
+        className="mt-5 bg-red-600 text-white px-6 py-2 rounded-lg"
+      >
+        OK
+      </button>
+
+    </div>
+
+  </div>
+)}
+
+       <section className="w-full min-h-screen bg-[#f5f7fb] py-10 px-2 sm:px-4 md:px-6 lg:px-8 overflow-visible">
 
       <div className="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 md:p-10 overflow-visible">
         {/* Heading */}
@@ -602,7 +624,7 @@ ${
 
   <div className="relative">
     <label className="text-sm font-semibold text-black">
-                Referance By 1 
+                Reference By 1 
               </label>
   <input
   type="text"
@@ -690,7 +712,7 @@ ${
 
   <div className="relative">
   <label className="text-sm font-semibold text-black">
-    Referance By 2
+    Reference By 2
   </label>
 
   <input
@@ -793,14 +815,18 @@ ${
 }`}
   >
     <span className="text-gray-700">
-      {selectedServiceTypes.length > 0
-        ? ServiceProvidertype
-  .filter((item) =>
-    selectedServiceTypes.includes(String(item.id))
-  )
-  .map((item) => item.name)
-  .join(", ")
-        : "Select Service Provider Type"}
+{
+  selectedServiceTypes.length > 0
+    ? selectedServiceTypes
+        .map(
+          (id) =>
+            ServiceProvidertype.find(
+              (item) => String(item.id) === id
+            )?.name
+        )
+        .join(", ")
+    : "Select Service Provider Type"
+}
     </span>
 
     <ChevronDown size={20} className="text-gray-500" />
@@ -814,7 +840,7 @@ ${
           key={item.id}
           className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
         >
-        <input
+    <input
   type="checkbox"
   checked={selectedServiceTypes.includes(String(item.id))}
   onChange={(e) => {
@@ -1243,24 +1269,43 @@ ${
 
   <div>
   <label className="block text-sm font-medium mb-1">
-      GST No <span className="text-red-600">*</span>
+      GST No 
     </label>
    <input
       type="text"
       name="gstNo"
       placeholder="Enter GST Number"
       value={formData.gstNo}
-      onChange={(e) => {
-        const value = e.target.value
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, "");
+     onChange={(e) => {
+  const value = e.target.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 
-        setFormData({
-          ...formData,
-          gstNo: value,
-        });
-      }}
-      required
+  setFormData({
+    ...formData,
+    gstNo: value,
+  });
+
+  const gstRegex =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/;
+
+  let error = "";
+
+if (value.length > 0) {
+  if (value.length < 15) {
+    error =
+      "GST number must be 15 characters (Eg: 33WXYZT9876M1Z9)";
+  } else if (!gstRegex.test(value)) {
+    error = "Enter valid GST format";
+  }
+}
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    gstNo: error,
+  }));
+}}
+   
       maxLength={15}
       className={`w-full mt-1 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
 ${
@@ -1564,16 +1609,35 @@ ${
   type="text"
   name="contactNumber"
   value={formData.contactNumber}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, ""); // numbers only
+ onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, "");
 
-    if (value.length <= 10) {
-      setFormData({
-        ...formData,
-        contactNumber: value,
-      });
-    }
-  }}
+  if (value.length <= 10) {
+    setFormData({
+      ...formData,
+      contactNumber: value,
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber:
+        value.length > 0 && value.length < 10
+          ? "Contact number must be 10 digits"
+          : "",
+    }));
+  }
+}}
+onBlur={() => {
+  if (
+    formData.contactNumber &&
+    formData.contactNumber.length < 10
+  ) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber: "Contact number must be 10 digits",
+    }));
+  }
+}}
   required
   maxLength={10}
    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
@@ -1619,26 +1683,61 @@ ${
     <label className="block text-sm font-medium mb-1">
       Email <span className="text-red-500">*</span>
     </label>
-     <input
-                type="email"
-                name="mailId"
-                value={formData.mailId}
-                onChange={handleChange}
-                required
-                className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
-${
-  validationErrors.mailId
-    ? "border-red-500"
-    : "border-gray-300"
-}`}/>
+   <input
+  type="email"
+  name="mailId"
+  value={formData.mailId}
+  onChange={(e) => {
+    const value = e.target.value;
+
+    setFormData({
+      ...formData,
+      mailId: value,
+    });
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      mailId:
+        value.length > 0 &&
+        !emailRegex.test(value)
+          ? "Enter valid Email ID"
+          : "",
+    }));
+  }}
+  onBlur={() => {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      formData.mailId &&
+      !emailRegex.test(formData.mailId)
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        mailId: "Enter valid Email ID",
+      }));
+    }
+  }}
+  className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
+  ${
+    validationErrors.mailId
+      ? "border-red-500"
+      : "border-gray-300"
+  }`}
+
+  
+/>
+{validationErrors.mailId && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.mailId}
+  </p>
+)}
 
   </div>
 
-  {validationErrors.contactNumber && (
-  <p className="text-red-500 text-sm mt-1">
-    {validationErrors.contactNumber}
-  </p>
-)}
 
 
 </div>
@@ -1656,6 +1755,8 @@ ${
       </div>
     </section>
     </>
+
+ 
   );
 }
 

@@ -57,6 +57,26 @@ const [registeredSupplier, setRegisteredSupplier] = useState({
   getStates();
 }, []);
 
+
+useEffect(() => {
+  const handleClickOutside = () => {
+    setDropdownOpen({
+      supplierType: false,
+      ownership: false,
+      state: false,
+      city: false,
+      category: false,
+      bloodGroup: false,
+    });
+  };
+
+  document.addEventListener("click", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("click", handleClickOutside);
+  };
+}, []);
+
 const getStates = async () => {
   try {
     const response = await axios.get(
@@ -143,10 +163,16 @@ if (!formData.qualification.trim()) {
   errors.qualification = "Please enter qualification";
 }
 
-if (!formData.gstNo.trim()) {
-  errors.gstNo = "Please enter GST number";
-}
+const gstRegex =
+  /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/;
 
+if (
+  formData.gstNo.trim() &&
+  !gstRegex.test(formData.gstNo.trim())
+) {
+  errors.gstNo =
+    "Enter valid GST format (Eg: 33WXYZT9876M1Z9)";
+}
 if (!formData.registeredAddress.trim()) {
   errors.registeredAddress =
     "Please enter registered address";
@@ -177,9 +203,28 @@ if (!formData.contactNumber.trim()) {
     "Please enter contact number";
 }
 
+if (
+  formData.contactNumber.trim() &&
+  formData.contactNumber.length !== 10
+) {
+  errors.contactNumber =
+    "Contact number must be 10 digits";
+}
+
 if (!formData.mailId.trim()) {
   errors.mailId = "Please enter email";
 }
+
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (
+  formData.mailId.trim() &&
+  !emailRegex.test(formData.mailId)
+) {
+  errors.mailId = "Enter valid Email ID";
+}
+
 
 setValidationErrors(errors);
 
@@ -219,13 +264,19 @@ if (Object.keys(errors).length > 0) {
     try {
       const form = new FormData();
     
-
-  if (formData.ownership === "PARTNERSHIP") {
+if (formData.ownership === "PARTNERSHIP") {
+  if (extraPhotos.photo1) {
     form.append("photo1", extraPhotos.photo1);
-    form.append("photo2", extraPhotos.photo2);
-    form.append("photo3", extraPhotos.photo3);
   }
 
+  if (extraPhotos.photo2) {
+    form.append("photo2", extraPhotos.photo2);
+  }
+
+  if (extraPhotos.photo3) {
+    form.append("photo3", extraPhotos.photo3);
+  }
+}
 
 
       //  COMMON
@@ -538,12 +589,14 @@ onClick={() => {
 
   <button
     type="button"
-    onClick={() =>
-      setDropdownOpen({
-        ...dropdownOpen,
-        supplierType: !dropdownOpen.supplierType,
-      })
-    }
+   onClick={(e) => {
+  e.stopPropagation();
+
+  setDropdownOpen({
+    ...dropdownOpen,
+    supplierType: !dropdownOpen.supplierType,
+  });
+}}
    className={`w-full mt-2 border rounded-sm px-4 py-3 bg-white flex items-center justify-between text-[16px] text-gray-500
 ${
   validationErrors.supplierType
@@ -571,7 +624,10 @@ ${
   </button>
 
   {dropdownOpen.supplierType && (
-    <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+   <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto"
+>
 
       {supplierTypes.map((item) => (
         <label
@@ -581,25 +637,22 @@ ${
           <input
             type="checkbox"
             checked={formData.supplierType.includes(item.id)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setFormData({
-                  ...formData,
-                  supplierType: [
-                    ...formData.supplierType,
-                    item.id,
-                  ],
-                });
-              } else {
-                setFormData({
-                  ...formData,
-                  supplierType:
-                    formData.supplierType.filter(
-                      (id) => id !== item.id
-                    ),
-                });
-              }
-            }}
+         onChange={(e) => {
+  setFormData((prev) => ({
+    ...prev,
+    supplierType: e.target.checked
+      ? [...prev.supplierType, item.id]
+      : prev.supplierType.filter((id) => id !== item.id),
+  }));
+
+  // next field click pannumbodhu close aaga
+  // setTimeout(() => {
+  //   setDropdownOpen((prev) => ({
+  //     ...prev,
+  //     supplierType: false,
+  //   }));
+  // }, 200);
+}}
           />
 
           <span>{item.name}</span>
@@ -622,12 +675,14 @@ ${
 
   <button
     type="button"
-    onClick={() =>
-      setDropdownOpen({
-        ...dropdownOpen,
-        category: !dropdownOpen.category,
-      })
-    }
+    onClick={(e) => {
+  e.stopPropagation();
+
+  setDropdownOpen({
+    ...dropdownOpen,
+    category: !dropdownOpen.category,
+  });
+}}
     className={`w-full mt-2 border rounded-sm px-4 py-3 bg-white flex items-center justify-between text-[16px] text-gray-500
 ${
   validationErrors.category
@@ -655,7 +710,10 @@ ${
   </button>
 
   {dropdownOpen.category && (
-    <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+    <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto"
+>
 
       {categories.map((item) => (
         <label
@@ -665,25 +723,19 @@ ${
           <input
             type="checkbox"
             checked={formData.category.includes(item.id)}
-            onChange={(e) => {
-              if (e.target.checked) {
-                setFormData({
-                  ...formData,
-                  category: [
-                    ...formData.category,
-                    item.id,
-                  ],
-                });
-              } else {
-                setFormData({
-                  ...formData,
-                  category:
-                    formData.category.filter(
-                      (id) => id !== item.id
-                    ),
-                });
-              }
-            }}
+          onChange={(e) => {
+  setFormData((prev) => ({
+    ...prev,
+    category: e.target.checked
+      ? [...prev.category, item.id]
+      : prev.category.filter((id) => id !== item.id),
+  }));
+}}
+
+  // setDropdownOpen((prev) => ({
+  //   ...prev,
+  //   category: false,
+  // }));
           />
 
           <span>{item.name}</span>
@@ -801,12 +853,14 @@ ${
 
     <button
       type="button"
-      onClick={() =>
-        setDropdownOpen({
-          ...dropdownOpen,
-          ownership: !dropdownOpen.ownership,
-        })
-      }
+     onClick={(e) => {
+  e.stopPropagation();
+
+  setDropdownOpen({
+    ...dropdownOpen,
+    ownership: !dropdownOpen.ownership,
+  });
+}}
    className={`w-full mt-1 border rounded-sm px-4 py-3 bg-white flex items-center justify-between text-[16px] text-gray-500
 ${
   validationErrors.ownership
@@ -835,7 +889,10 @@ ${
     </button>
 
     {dropdownOpen.ownership && (
-      <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
+    <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden"
+>
 
         {[
           { value: "PROPRIETOR", label: "PROPRIETOR" },
@@ -1145,7 +1202,7 @@ setValidationErrors((prev) => ({
              <input
   type="text"
   name="idProof"
-  placeholder="Aadhar Card / PAN Card "
+  placeholder="Aadhaar Card / PAN Card "
   value={formData.idProof}
   onChange={handleChange}
   required
@@ -1223,12 +1280,17 @@ ${
   });
 }}
 />
+
+
   </label>
   {validationErrors.idProofDoc && (
   <p className="text-red-500 text-sm mt-1">
     {validationErrors.idProofDoc}
   </p>
 )}
+<p className="text-[12px] text-gray-600 mt-1">
+  Allowed: PDF | Max size: 3 MB
+</p>
 
 
   </div>
@@ -1273,17 +1335,36 @@ ${
       name="gstNo"
       placeholder="Enter GST Number"
       value={formData.gstNo}
-      onChange={(e) => {
-        const value = e.target.value
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, "");
+     onChange={(e) => {
+  const value = e.target.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 
-        setFormData({
-          ...formData,
-          gstNo: value,
-        });
-      }}
-      required
+  setFormData({
+    ...formData,
+    gstNo: value,
+  });
+
+  const gstRegex =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/;
+
+  let error = "";
+
+if (value.length > 0) {
+  if (value.length < 15) {
+    error =
+      "GST number must be 15 characters (Eg: 33WXYZT9876M1Z9)";
+  } else if (!gstRegex.test(value)) {
+    error = "Enter valid GST format";
+  }
+}
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    gstNo: error,
+  }));
+}}
+     
       maxLength={15}
     className={`w-full mt-1 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
 ${
@@ -1467,12 +1548,14 @@ ${
       </label>
     <button
       type="button"
-      onClick={() =>
-        setDropdownOpen({
-          ...dropdownOpen,
-          bloodGroup: !dropdownOpen.bloodGroup,
-        })
-      }
+   onClick={(e) => {
+  e.stopPropagation();
+
+  setDropdownOpen({
+    ...dropdownOpen,
+    bloodGroup: !dropdownOpen.bloodGroup,
+  });
+}}
     className={`w-full mt-2 border rounded-sm px-4 py-3 bg-white flex items-center justify-between text-[16px] text-gray-500 outline-none focus:ring-2 focus:ring-red-500 overflow-hidden
 ${
   validationErrors.bloodGroup
@@ -1493,7 +1576,10 @@ ${
     </button>
 
     {dropdownOpen.bloodGroup && (
-    <div className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] max-h-60 overflow-y-auto">
+  <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute top-full left-0 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-[9999] max-h-60 overflow-y-auto"
+>
 
         {[
           "A+",
@@ -1594,16 +1680,35 @@ ${
   type="text"
   name="contactNumber"
   value={formData.contactNumber}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, ""); 
+ onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, "");
 
-    if (value.length <= 10) {
-      setFormData({
-        ...formData,
-        contactNumber: value,
-      });
-    }
-  }}
+  if (value.length <= 10) {
+    setFormData({
+      ...formData,
+      contactNumber: value,
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber:
+        value.length > 0 && value.length < 10
+          ? "Contact number must be 10 digits"
+          : "",
+    }));
+  }
+}}
+onBlur={() => {
+  if (
+    formData.contactNumber &&
+    formData.contactNumber.length < 10
+  ) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber: "Contact number must be 10 digits",
+    }));
+  }
+}}
   required
   maxLength={10}
    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
@@ -1651,19 +1756,51 @@ ${
         Email <span className="text-red-500">*</span>
       </label>
 
-       <input
-                type="email"
-                name="mailId"
-                value={formData.mailId}
-                onChange={handleChange}
-                required
-              className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
-${
-  validationErrors.mailId
-    ? "border-red-500"
-    : "border-gray-300"
-}`}></input>
+     <input
+  type="email"
+  name="mailId"
+  value={formData.mailId}
+  onChange={(e) => {
+    const value = e.target.value;
 
+    setFormData({
+      ...formData,
+      mailId: value,
+    });
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      mailId:
+        value.length > 0 &&
+        !emailRegex.test(value)
+          ? "Enter valid Email ID"
+          : "",
+    }));
+  }}
+  onBlur={() => {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      formData.mailId &&
+      !emailRegex.test(formData.mailId)
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        mailId: "Enter valid Email ID",
+      }));
+    }
+  }}
+  className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
+  ${
+    validationErrors.mailId
+      ? "border-red-500"
+      : "border-gray-300"
+  }`}
+/>
   {validationErrors.mailId && (
   <p className="text-red-500 text-sm mt-1">
     {validationErrors.mailId}

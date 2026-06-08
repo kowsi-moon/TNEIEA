@@ -13,8 +13,10 @@ function MemberRegistration() {
   photo3: null,
 });
 const [licenseDoc, setLicenseDoc] = useState(null);
+
 const [formKey, setFormKey] = useState(0);
 const [idProofDoc, setIdProofDoc] = useState(null);
+
 
 const [showPopup, setShowPopup] = useState(false);
 const [popupType, setPopupType] = useState(""); 
@@ -172,8 +174,15 @@ if (!formData.qualification.trim()) {
   errors.qualification = "Please enter qualification";
 }
 
-if (!formData.gstNo.trim()) {
-  errors.gstNo = "Please enter GST number";
+const gstRegex =
+  /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[A-Z0-9]{1}Z[A-Z0-9]{1}$/;
+
+if (
+  formData.gstNo.trim() &&
+  !gstRegex.test(formData.gstNo.trim())
+) {
+  errors.gstNo =
+    "Enter valid GST format (Eg: 33WXYZT9876M1Z9)";
 }
 
 if (!formData.permanentAddress.trim()) {
@@ -206,8 +215,26 @@ if (!formData.contactNumber.trim()) {
   errors.contactNumber = "Please enter contact number";
 }
 
+if (
+  formData.contactNumber.trim() &&
+  formData.contactNumber.length !== 10
+) {
+  errors.contactNumber =
+    "Contact number must be 10 digits";
+}
+
 if (!formData.mailId.trim()) {
   errors.mailId = "Please enter email";
+}
+
+const emailRegex =
+  /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+if (
+  formData.mailId.trim() &&
+  !emailRegex.test(formData.mailId)
+) {
+  errors.mailId = "Enter valid Email ID";
 }
 
 if (photo && photo.size > 3 * 1024 * 1024) {
@@ -304,12 +331,21 @@ data.append("dob", formattedDate);
     data.append("licensedoc", licenseDoc);
     data.append("idproofdoc", idProofDoc);
 
-    if (formData.ownership === "PARTNERSHIP") {
-      data.append("photo1", extraPhotos.photo1);
-      data.append("photo2", extraPhotos.photo2);
-      data.append("photo3", extraPhotos.photo3);
-    }
+  if (formData.ownership === "PARTNERSHIP") {
 
+  if (extraPhotos.photo1) {
+    data.append("photo1", extraPhotos.photo1);
+  }
+
+  if (extraPhotos.photo2) {
+    data.append("photo2", extraPhotos.photo2);
+  }
+
+  if (extraPhotos.photo3) {
+    data.append("photo3", extraPhotos.photo3);
+  }
+
+}
     const response = await axios.post(
       "https://portal.tneiea.in/api/auth/register",
       data,
@@ -319,8 +355,10 @@ data.append("dob", formattedDate);
         },
       }
     );
-
     console.log("SUCCESS RESPONSE:", response.data);
+alert(JSON.stringify(response.data));
+
+ 
 
    
     // if (response.data.result === true) {
@@ -329,14 +367,30 @@ data.append("dob", formattedDate);
 
 if (response.data.result === true) {
 
+  const memberRes = await axios.get(
+    "https://portal.tneiea.in/api/v2/members"
+  );
+
+  const matchedMember =
+    memberRes.data.data.find(
+      (item) =>
+        item.memberName?.trim().toLowerCase() ===
+        formData.memberName?.trim().toLowerCase()
+    );
+
   setRegisteredMember({
-    memberId: formData.memberNo,
-    memberName: formData.memberName,
+    memberId: matchedMember?.memberNo || "",
+    memberName:
+      matchedMember?.memberName ||
+      formData.memberName,
   });
 
   setRegistrationSuccess(true);
-      
 
+  return;
+
+
+return;
       // reset
      setFormData({
   memberNo: "",
@@ -470,6 +524,9 @@ if (registrationSuccess) {
     </section>
   );
 }
+
+
+
   return (
     
   <>
@@ -1121,7 +1178,7 @@ ${
              <input
   type="text"
   name="idProof"
-  placeholder="Aadhar Card / PAN Card "
+  placeholder="Aadhaar Card / PAN Card "
   value={formData.idProof}
   onChange={handleChange}
   required
@@ -1243,24 +1300,42 @@ ${
 
   <div>
     <label className="block text-sm font-medium mb-1">
-      GST No <span className="text-red-600">*</span>
+      GST No 
     </label>
    <input
       type="text"
       name="gstNo"
       placeholder="Enter GST Number"
       value={formData.gstNo}
-      onChange={(e) => {
-        const value = e.target.value
-          .toUpperCase()
-          .replace(/[^A-Z0-9]/g, "");
+     onChange={(e) => {
+  const value = e.target.value
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, "");
 
-        setFormData({
-          ...formData,
-          gstNo: value,
-        });
-      }}
-      required
+  setFormData({
+    ...formData,
+    gstNo: value,
+  });
+
+  const gstRegex =
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][A-Z0-9]Z[A-Z0-9]$/;
+
+  let error = "";
+
+  if (value.length > 0) {
+    if (value.length < 15) {
+      error = "GST number must be 15 characters (Eg: 33WXYZT9876M1Z9)";
+    } else if (!gstRegex.test(value)) {
+      error = "Enter valid GST format";
+    }
+  }
+
+  setValidationErrors((prev) => ({
+    ...prev,
+    gstNo: error,
+  }));
+}}
+    
       maxLength={15}
      className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
 ${
@@ -1578,16 +1653,35 @@ ${
   type="text"
   name="contactNumber"
   value={formData.contactNumber}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, ""); // numbers only
+ onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, "");
 
-    if (value.length <= 10) {
-      setFormData({
-        ...formData,
-        contactNumber: value,
-      });
-    }
-  }}
+  if (value.length <= 10) {
+    setFormData({
+      ...formData,
+      contactNumber: value,
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber:
+        value.length > 0 && value.length < 10
+          ? "Contact number must be 10 digits"
+          : "",
+    }));
+  }
+}}
+onBlur={() => {
+  if (
+    formData.contactNumber &&
+    formData.contactNumber.length < 10
+  ) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      contactNumber: "Contact number must be 10 digits",
+    }));
+  }
+}}
   required
   maxLength={10}
   className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
@@ -1635,20 +1729,51 @@ ${
     <label className="block text-sm font-medium mb-1">
       Email <span className="text-red-500">*</span>
     </label>
-     <input
-                type="email"
-                name="mailId"
-                value={formData.mailId}
-                onChange={handleChange}
-                required
-              className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
-${
-  validationErrors.mailId
-    ? "border-red-500"
-    : "border-gray-300"
-}`}
-              />
+    <input
+  type="email"
+  name="mailId"
+  value={formData.mailId}
+  onChange={(e) => {
+    const value = e.target.value;
 
+    setFormData({
+      ...formData,
+      mailId: value,
+    });
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      mailId:
+        value.length > 0 &&
+        !emailRegex.test(value)
+          ? "Enter valid Email ID"
+          : "",
+    }));
+  }}
+  onBlur={() => {
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      formData.mailId &&
+      !emailRegex.test(formData.mailId)
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        mailId: "Enter valid Email ID",
+      }));
+    }
+  }}
+  className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
+  ${
+    validationErrors.mailId
+      ? "border-red-500"
+      : "border-gray-300"
+  }`}
+/>
   </div>
  
 </div>

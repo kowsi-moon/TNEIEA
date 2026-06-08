@@ -17,7 +17,19 @@ function Navbar() {
     { name: "Contact", path: "/contact" },
   ];
   useEffect(() => {
+  const handleClickOutside = () => {
+    setOpenDropdown(false);
+  };
+
+  document.addEventListener("click", handleClickOutside);
+
+  return () => {
+    document.removeEventListener("click", handleClickOutside);
+  };
+}, []);
+ useEffect(() => {
   setMobileMenu(false);
+  setOpenDropdown(false);
 }, [location.pathname]);
 
   return (
@@ -73,7 +85,10 @@ function Navbar() {
         {/* Desktop Register Dropdown */}
         <div className="hidden lg:block relative ml-auto">
           <button
-            onClick={() => setOpenDropdown(!openDropdown)}
+  onClick={(e) => {
+    e.stopPropagation();
+    setOpenDropdown(!openDropdown);
+  }}
             className="flex items-center gap-2 bg-red-600 hover:bg-[#D8CDB5] transition text-white px-6 py-3 rounded-lg text-[17px] font-medium"
           >
             Register
@@ -82,27 +97,29 @@ function Navbar() {
 
           {/* Dropdown */}
           {openDropdown && (
-            <div className="absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-
+           <div
+  onClick={(e) => e.stopPropagation()}
+  className="absolute right-0 mt-3 w-60 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50"
+>
               <Link
                 to="/member_create"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
-                Member Create
+                Member Registration
               </Link>
 
               <Link
                 to="/supplier_create"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
-                Supplier Create
+                Supplier Registration
               </Link>
 
               <Link
                 to="/service_provider"
                 className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
               >
-                Service Provider
+                Service Provider Registration
               </Link>
 
             </div>
@@ -110,23 +127,41 @@ function Navbar() {
         </div>
 
         {/* Mobile Menu Button */}
-        <button
-          onClick={() => setMobileMenu(!mobileMenu)}
-          className="lg:hidden ml-auto text-black"
-        >
-          {mobileMenu ? <X size={30} /> : <Menu size={30} />}
-        </button>
+   {/* Mobile Menu Button */}
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setMobileMenu(!mobileMenu);
+  }}
+  className="lg:hidden ml-auto text-black"
+>
+  {mobileMenu ? <X size={30} /> : <Menu size={30} />}
+</button>
 
       </div>
 
       {/* Mobile Menu */}
-      {mobileMenu && (
-        <div className="lg:hidden bg-white border-t border-gray-200 shadow-md px-6 py-6">
+   {mobileMenu && (
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="lg:hidden absolute top-[92px] left-0 w-full bg-white border-t border-gray-200 shadow-md px-6 py-6 z-50"
+  >
 
           {/* Nav Links */}
           <div className="flex flex-col gap-5">
             {navLinks.map((item) => {
               const isActive = location.pathname === item.path;
+
+               <div className="mt-6">
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpenDropdown(!openDropdown);
+        }}
+      >
+        Register
+      </button>
+    </div>
 
               return (
                <Link
