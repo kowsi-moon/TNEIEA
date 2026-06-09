@@ -197,21 +197,21 @@ function Navbar() {
                   to="/member_create"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
-                  Member Create
+                  Member Registration
                 </Link>
 
                 <Link
                   to="/supplier_create"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
-                  Supplier Create
+                  Supplier Registration
                 </Link>
 
                 <Link
                   to="/service_provider"
                   className="block px-5 py-4 text-[15px] font-medium hover:bg-red-50 hover:text-red-600 transition"
                 >
-                  Service Provider
+                  Service Provider Registration
                 </Link>
 
               </div>

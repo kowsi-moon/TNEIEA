@@ -356,7 +356,7 @@ data.append("dob", formattedDate);
       }
     );
     console.log("SUCCESS RESPONSE:", response.data);
-alert(JSON.stringify(response.data));
+// alert(JSON.stringify(response.data));
 
  
 

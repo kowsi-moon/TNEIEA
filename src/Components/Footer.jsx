@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 
 import logo from "../assets/img.png";
-
+import playStoreBadge from "../assets/google-play-badge.png";
 
 function Footer() {
 
@@ -66,18 +66,55 @@ function Footer() {
               networking, professional development, and advocacy since 1979.
             </p>
 
-            {/* Social Icons */}
-            <div className="flex items-center gap-4 mt-8 text-[#4B4B4B]">
+            {/* Social Icons + Play Store */}
+<div className="flex items-center gap-4 mt-8">
+  <FaTwitter className="cursor-pointer hover:text-blue-500 transition text-2xl" />
+  <FaLinkedinIn className="cursor-pointer hover:text-blue-600 transition text-2xl" />
+  <FaFacebookF className="cursor-pointer hover:text-blue-700 transition text-2xl" />
+</div>
 
-              <FaTwitter className="cursor-pointer hover:text-blue-500 transition text-2xl" />
+{/* Download App */}
+<div className="mt-6">
+  <p className="text-[#C1442E] text-[15px] font-semibold mb-3">
+    Download Our Apps
+  </p>
 
-              <FaLinkedinIn className="cursor-pointer hover:text-blue-600 transition text-2xl" />
+  <div className="space-y-3">
 
-              <FaFacebookF className="cursor-pointer hover:text-blue-700 transition text-2xl" />
+    <div>
+     
 
-            </div>
+      <a href="https://play.google.com/store/apps/details?id=com.tneiea.memberportal&pcampaignid=web_share" target="_blank" rel="noopener noreferrer">
+        <img
+          src={playStoreBadge}
+          alt="TNEIEA Member "
+          className="h-10"
+        />
+      </a>
+       <p className="text-red-700 text-semibold mb-1 mt-2">
+        TNEIEA Member 
+      </p>
+    </div>
+
+    {/* <div>
+      <p className="text-red-700 text-sm mb-1">
+        TNEIEA Admin App
+      </p>
+
+      <a href="APP_LINK_2" target="_blank" rel="noopener noreferrer">
+        <img
+          src={playStoreBadge}
+          alt="TNEIEA Admin App"
+          className="h-10"
+        />
+      </a>
+    </div> */}
+
+  </div>
+</div>
           </div>
 
+  
           {/* Quick Links */}
           <div>
 
@@ -202,6 +239,10 @@ Terms & Conditions
           </div>
         </div>
       </div>
+
+      
+
+      
 
       {/* Bottom Footer */}
       <div className="border-t border-[#D8CDB5] bg-[#E3D7BB]">

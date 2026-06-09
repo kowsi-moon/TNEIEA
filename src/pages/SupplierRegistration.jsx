@@ -310,7 +310,11 @@ form.append(
      
       // FILES
 form.append("photo", formData.photo);
-form.append("logo", formData.logo);
+
+if (formData.logo) {
+  form.append("logo", formData.logo);
+}
+
 form.append("idproof", formData.idProof);
 form.append("idproofdoc", formData.idProofDoc);
 

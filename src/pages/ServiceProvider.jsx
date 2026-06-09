@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 
 function ServiceProvider() {
+const dropdownRef = useRef(null);
 const [formData, setFormData] = useState({
   ServiceProviderName: "",
   ServiceProviderType: "",
@@ -89,6 +90,26 @@ const [showReference2, setShowReference2] = useState(false);
     useEffect(() => {
   getStates();
   getMembers();
+}, []);
+
+useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target)
+    ) {
+      setShowDropdown(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+
+  return () => {
+    document.removeEventListener(
+      "mousedown",
+      handleClickOutside
+    );
+  };
 }, []);
   
   const getStates = async () => {
@@ -359,9 +380,15 @@ if (extraPhotos.photo3) {
 }
  
 
+// data.append("logo", formData.logo || "");
+
+data.append("photo", formData.photo);
+
+if (formData.logo) {
   data.append("logo", formData.logo);
-  data.append("idproofdoc", formData.idProofDoc);
- data.append("idproof", formData.idProof);
+}
+
+data.append("idproofdoc", formData.idProofDoc);
   data.append("companyname", formData.companyName);
   data.append("qualification", formData.qualification);
   data.append("gstno", formData.gstNo);
@@ -799,7 +826,7 @@ ${
   )}
 </div>
   {/* Row 2 */}
-  <div className="relative">
+ <div className="relative" ref={dropdownRef}>
   <label className="block mb-2 font-medium">
     Service Provider Type
   </label>
@@ -840,7 +867,7 @@ ${
           key={item.id}
           className="flex items-center gap-3 px-3 py-2 hover:bg-gray-100 rounded-lg cursor-pointer"
         >
-    <input
+   <input
   type="checkbox"
   checked={selectedServiceTypes.includes(String(item.id))}
   onChange={(e) => {
@@ -1143,13 +1170,20 @@ ${
       {formData.logo ? formData.logo.name : "upload logo"}
     </span>
 
-    <input
-      type="file"
-      name="logo"
-      accept=".jpg,.jpeg,.png"
-      onChange={handleFileChange}
-      className="hidden"
-    />
+   <input
+  type="file"
+  name="logo"
+  accept=".jpg,.jpeg,.png"
+  onChange={(e) => {
+    console.log("LOGO FILE =", e.target.files[0]);
+
+    setFormData({
+      ...formData,
+      logo: e.target.files[0],
+    });
+  }}
+  className="hidden"
+/>
   </label>
 
 {validationErrors.logo && (
@@ -1172,7 +1206,7 @@ ${
              <input
   type="text"
   name="idProof"
-  placeholder="Aadhar Card/PAN Card"
+  placeholder="Aadhaar Card/PAN Card"
   value={formData.idProof}
   onChange={handleChange}
   required
