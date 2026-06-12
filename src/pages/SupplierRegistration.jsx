@@ -51,6 +51,7 @@ const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
 const [registeredSupplier, setRegisteredSupplier] = useState({
   supplierName: "",
+  email: "",
 });
 
     useEffect(() => {
@@ -121,6 +122,24 @@ const getCities = async (stateId) => {
     ...validationErrors,
     [name]: "",
   });
+};
+
+
+const checkSupplierContact = async (contactNo) => {
+  try {
+    const form = new FormData();
+    form.append("contactno", contactNo);
+
+    const response = await axios.post(
+      "https://portal.tneiea.in/api/auth/check_supplier_contact",
+      form
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log("CONTACT CHECK ERROR", error);
+    return null;
+  }
 };
 
   const handleSubmit = async (e) => {
@@ -333,9 +352,10 @@ console.log(data);
 
 if (data.result) {
 
-  setRegisteredSupplier({
-    supplierName: formData.supplierName,
-  });
+ setRegisteredSupplier({
+  supplierName: formData.supplierName,
+  email: formData.mailId,
+});
 
   setRegistrationSuccess(true);
 
@@ -459,23 +479,28 @@ if (data.result) {
           className="w-24 h-24 mx-auto mb-5"
         />
 
-        <h2 className="text-4xl font-bold text-green-600 mb-3">
-          Successfully Registered
-        </h2>
+    <h2 className="text-3xl md:text-4xl font-bold text-green-600 mb-5 leading-tight">
+  Supplier Registered Successfully
+</h2>
 
-        <p className="text-gray-600 text-lg mb-8">
-          Your supplier registration has been submitted successfully.
-        </p>
+ <p className="text-gray-600 text-lg leading-8 mb-4 max-w-md mx-auto">
+  Your login credentials will be sent to your email
+  <span className="font-bold text-black">
+    {" "}
+    ({registeredSupplier.email})
+  </span>.
+  Please check your inbox or spam. Alternatively,
+  contact the administrator for assistance.
+</p>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-4">
           <strong>Supplier Name :</strong>{" "}
           {registeredSupplier.supplierName}
         </div>
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5 shadow-sm">
           <p className="text-blue-800 font-semibold text-base leading-7">
-            Registration completed successfully.
-            <br />
+          
             Our Admin Team will review your application and contact you shortly.
           </p>
         </div>
@@ -1144,7 +1169,7 @@ ${
     {/* Logo */}
     <div>
      <label className="block text-[15px] font-medium text-black">
-  Logo
+  Logo <span className="text-red-600">*</span>
 </label>
 
 <label className="mt-1 flex items-center border border-gray-300 rounded-lg overflow-hidden cursor-pointer w-full">
@@ -1518,16 +1543,24 @@ ${
   name="pincode"
   placeholder="Enter Pincode"
   value={formData.pincode}
-  onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, "");
+ onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, "");
 
-    if (value.length <= 6) {
-      setFormData({
-        ...formData,
-        pincode: value,
-      });
-    }
-  }}
+  if (value.length <= 6) {
+    setFormData({
+      ...formData,
+      pincode: value,
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      pincode:
+        value.length > 0 && value.length < 6
+          ? "Pincode must be 6 digits"
+          : "",
+    }));
+  }
+}}
   required
   maxLength={6}
  className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
@@ -1548,7 +1581,7 @@ ${
     {/* Blood Group */}
   <div className="relative">
       <label className="block text-[15px] font-medium text-black mb-2">
-        Blood Group
+        Blood Group <span className="text-red-600">*</span>
       </label>
     <button
       type="button"
@@ -1632,7 +1665,7 @@ ${
     {/* Date of Birth */}
     <div>
       <label className="block text-[15px] font-medium text-black mb-2">
-        Date of Birth
+        Date of Birth <span className="text-red-600">*</span> 
       </label>
 
       <input
@@ -1702,7 +1735,7 @@ ${
     }));
   }
 }}
-onBlur={() => {
+onBlur={async () => {
   if (
     formData.contactNumber &&
     formData.contactNumber.length < 10
@@ -1711,6 +1744,24 @@ onBlur={() => {
       ...prev,
       contactNumber: "Contact number must be 10 digits",
     }));
+    return;
+  }
+
+  if (formData.contactNumber.length === 10) {
+    const res = await checkSupplierContact(
+      formData.contactNumber
+    );
+
+    if (
+      res &&
+      (res.result === false ||
+        res.message?.toLowerCase().includes("already"))
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        contactNumber: "Contact Number already exists",
+      }));
+    }
   }
 }}
   required
@@ -1748,9 +1799,30 @@ ${
       });
     }
   }}
+
+  onBlur={() => {
+  if (
+    formData.alternateContactNumber &&
+    formData.alternateContactNumber ===
+      formData.contactNumber
+  ) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      alternateContactNumber:
+        "Alternate contact number should not be same as contact number",
+    }));
+  }
+}}
+
   maxLength={10}
   className="w-full  border border-gray-300 rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500"
 />
+
+{validationErrors.alternateContactNumber && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.alternateContactNumber}
+  </p>
+)}
 
     </div>
 

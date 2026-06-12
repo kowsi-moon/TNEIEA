@@ -92,6 +92,25 @@ const [showReference2, setShowReference2] = useState(false);
   getMembers();
 }, []);
 
+
+const checkServiceProviderContact = async (contactNo) => {
+  try {
+    const form = new FormData();
+
+    form.append("contactno", contactNo);
+
+    const response = await axios.post(
+      "https://portal.tneiea.in/api/auth/check_serviceprovider_contact",
+      form
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log("CONTACT CHECK ERROR", error);
+    return null;
+  }
+};
+
 useEffect(() => {
   const handleClickOutside = (event) => {
     if (
@@ -387,7 +406,7 @@ data.append("photo", formData.photo);
 if (formData.logo) {
   data.append("logo", formData.logo);
 }
-
+data.append("idproof", formData.idProof);
 data.append("idproofdoc", formData.idProofDoc);
   data.append("companyname", formData.companyName);
   data.append("qualification", formData.qualification);
@@ -547,24 +566,26 @@ if (showSuccessPage) {
           alt="success"
           className="w-24 h-24 mx-auto mb-5"
         />
+<h2 className="text-3xl md:text-4xl font-bold text-green-600 mb-4">
+  Successfully Registered
+</h2>
 
-        <h2 className="text-4xl font-bold text-green-600 mb-3">
-          Successfully Registered
-        </h2>
+<p className="text-gray-600 text-lg leading-8 mb-3 max-w-md mx-auto">
+  Your login credentials will be sent to your email
+  <span className="font-bold text-black">
+    {" "}({formData.mailId})
+  </span>.
+  Please check your inbox or spam. Alternatively,
+  contact the administrator for assistance.
+</p>
 
-        <p className="text-gray-600 text-lg mb-8">
-          Your service provider registration has been submitted successfully.
-        </p>
-
-        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
-          <strong>Service Provider Name :</strong>{" "}
-          {formData.ServiceProviderName}
-        </div>
+<div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-3">
+  <strong>Service Provider Name :</strong>{" "}
+  {formData.ServiceProviderName}
+</div>
 
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5">
           <p className="text-blue-800 font-semibold">
-            Registration completed successfully.
-            <br />
             Our Admin Team will review your application and contact you shortly.
           </p>
         </div>
@@ -1158,7 +1179,7 @@ ${
   <div>
     <div>
   <label className="block text-[15px] font-medium text-black">
-    Logo
+    Logo <span className="text-red-600">*</span>
   </label>
 
   <label className="mt-2 flex items-center border border-gray-300 rounded-sm overflow-hidden cursor-pointer w-full">
@@ -1485,15 +1506,23 @@ ${
   placeholder="Enter Pincode"
   value={formData.pincode}
   onChange={(e) => {
-    const value = e.target.value.replace(/\D/g, "");
+  const value = e.target.value.replace(/\D/g, "");
 
-    if (value.length <= 6) {
-      setFormData({
-        ...formData,
-        pincode: value,
-      });
-    }
-  }}
+  if (value.length <= 6) {
+    setFormData({
+      ...formData,
+      pincode: value,
+    });
+
+    setValidationErrors((prev) => ({
+      ...prev,
+      pincode:
+        value.length > 0 && value.length < 6
+          ? "Pincode must be 6 digits"
+          : "",
+    }));
+  }
+}}
   required
   maxLength={6}
    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
@@ -1515,7 +1544,7 @@ ${
 
    <div className="relative z-10">
         <label className="block text-[15px] font-medium text-black mb-2">
-          Blood Group
+          Blood Group <span className="text-red-600">*</span>
         </label>
       <button
         type="button"
@@ -1661,7 +1690,7 @@ ${
     }));
   }
 }}
-onBlur={() => {
+onBlur={async () => {
   if (
     formData.contactNumber &&
     formData.contactNumber.length < 10
@@ -1670,6 +1699,24 @@ onBlur={() => {
       ...prev,
       contactNumber: "Contact number must be 10 digits",
     }));
+    return;
+  }
+
+  if (formData.contactNumber.length === 10) {
+  const res = await checkServiceProviderContact(
+  formData.contactNumber
+);
+
+    if (
+      res &&
+      (res.result === false ||
+        res.message?.toLowerCase().includes("already"))
+    ) {
+      setValidationErrors((prev) => ({
+        ...prev,
+        contactNumber: "Contact Number already exists",
+      }));
+    }
   }
 }}
   required
@@ -1707,10 +1754,33 @@ ${
       });
     }
   }}
+
+  onBlur={() => {
+  if (
+    formData.alternateContactNumber &&
+    formData.alternateContactNumber ===
+      formData.contactNumber
+  ) {
+    setValidationErrors((prev) => ({
+      ...prev,
+      alternateContactNumber:
+        "Alternate contact number should not be same as contact number",
+    }));
+  } else {
+    setValidationErrors((prev) => ({
+      ...prev,
+      alternateContactNumber: "",
+    }));
+  }
+}}
   maxLength={10}
   className="w-full mt-2 border border-gray-300 rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500"
 />
-
+{validationErrors.alternateContactNumber && (
+  <p className="text-red-500 text-sm mt-1">
+    {validationErrors.alternateContactNumber}
+  </p>
+)}
   </div>
 
   <div>
