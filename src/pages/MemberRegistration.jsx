@@ -509,15 +509,15 @@ data.append(
 
   if (registrationSuccess) {
     return (
-      <section className="fixed inset-0 flex flex-col items-center justify-center bg-[#f5f7fb] px-4 z-50 overflow-hidden">
-        <div className="bg-white rounded-3xl shadow-xl p-10 max-w-xl w-full text-center border border-gray-100">
+<section className="fixed inset-0 flex flex-col items-center justify-center bg-[#f5f7fb] px-4 z-50">
+      <div className="bg-white rounded-3xl shadow-xl p-8 max-w-xl w-full text-center border border-gray-100">
           <img
             src="https://cdn-icons-png.flaticon.com/512/190/190411.png"
             alt="success"
-            className="w-24 h-24 mx-auto mb-5"
+           className="w-20 h-20 mx-auto mb-4"
           />
 
-          <h2 className="text-4xl font-bold text-green-600 mb-3">
+         <h2 className="text-3xl font-bold text-green-600 mb-2">
             Member Registered Successfully 
           </h2>
 
@@ -532,7 +532,7 @@ data.append(
 </p>
 
 
-          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 mb-6">
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl p-4 mb-4">
             <div className="flex flex-wrap items-center justify-between gap-3 text-lg">
               <div>
                 <strong>Member ID :</strong> {registeredMember.memberId}
@@ -544,7 +544,7 @@ data.append(
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-5 shadow-sm">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-300 rounded-2xl p-4 shadow-sm">
             <p className="text-blue-800 font-semibold text-base leading-7">
               Our Admin Team will review your application and contact you
               shortly regarding the next steps of your membership process.
@@ -552,12 +552,11 @@ data.append(
           </div>
         </div>
 
-        <button
-          onClick={() => navigate("/")}
-          className="mt-6 bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-xl font-semibold shadow-lg transition"
-        >
-          Back To Home
-        </button>
+       <button
+  onClick={() => navigate("/")}
+ className="mt-4 bg-red-600 hover:bg-red-700 text-white px-10 py-3 rounded-xl font-semibold shadow-lg transition">
+  Back To Home
+</button>
       </section>
     );
   }
