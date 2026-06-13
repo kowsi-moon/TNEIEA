@@ -3,6 +3,9 @@ import { ChevronDown } from "lucide-react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import "../App.css";
 function MemberRegistration() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -25,7 +28,7 @@ function MemberRegistration() {
     memberType: "",
     ownership: "",
     licenseNumber: "",
-    licenseExpiryDate: "",
+   licenseExpiryDate: null,
     companyName: "",
     idProof: "",
     qualification: "",
@@ -303,6 +306,24 @@ function MemberRegistration() {
       data.append("membertype", formData.memberType);
       data.append("ownership", formData.ownership);
       data.append("licensenumber", formData.licenseNumber);
+      const formatDateTime = (date) => {
+  if (!date) return "";
+
+  const pad = (n) => String(n).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(
+    date.getMonth() + 1
+  )}-${pad(date.getDate())} ${pad(
+    date.getHours()
+  )}:${pad(date.getMinutes())}:${pad(
+    date.getSeconds()
+  )}`;
+};
+
+data.append(
+  "licenseexpirydate",
+  formatDateTime(formData.licenseExpiryDate)
+);
       data.append("companyname", formData.companyName);
       data.append("idproof", formData.idProof);
       data.append("qualification", formData.qualification);
@@ -1095,23 +1116,31 @@ ${validationErrors.licenseDoc ? "border-red-500" : ""}`}
               </div>
 
               <div>
-  <label className="block text-sm font-medium mb-1">
-    License Expiry Date <span className="text-red-500">*</span>
-  </label>
+ <label className="block text-sm font-medium mb-1">
+  License Expiry Date <span className="text-red-500">*</span>
+</label>
 
-  <input
-    type="date"
-    name="licenseExpiryDate"
-    value={formData.licenseExpiryDate}
-    min={new Date().toISOString().split("T")[0]}
-    onChange={handleChange}
-    className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
-      ${
-        validationErrors.licenseExpiryDate
-          ? "border-red-500"
-          : "border-gray-300"
-      }`}
-  />
+<DatePicker
+  selected={
+    formData.licenseExpiryDate
+      ? new Date(formData.licenseExpiryDate)
+      : null
+  }
+  onChange={(date) =>
+    setFormData((prev) => ({
+      ...prev,
+      licenseExpiryDate: date,
+    }))
+  }
+  showTimeSelect
+  timeFormat="HH:mm"
+  timeIntervals={1}
+
+  dateFormat="yyyy-MM-dd HH:mm:ss"
+  minDate={new Date()}
+  placeholderText="Select License Expiry Date"
+  className="w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500"
+/>
 
   {validationErrors.licenseExpiryDate && (
     <p className="text-red-500 text-sm mt-1">
@@ -1753,13 +1782,14 @@ ${validationErrors.dob ? "border-red-500" : "border-gray-300"}`}
                   className={`w-full mt-2 border rounded-sm px-4 py-3 text-[16px] outline-none focus:ring-2 focus:ring-red-500
   ${validationErrors.mailId ? "border-red-500" : "border-gray-300"}`}
                 />
-              </div>
-            </div>
-            {validationErrors.mailId && (
+                 {validationErrors.mailId && (
               <p className="text-red-500 text-sm mt-1">
                 {validationErrors.mailId}
               </p>
             )}
+              </div>
+            </div>
+           
 
             {/* Submit */}
             <div className="flex justify-center pt-4">

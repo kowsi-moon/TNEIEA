@@ -31,3 +31,8 @@ select {
   box-sizing: border-box;
   min-width: 0;
 }
+.react-datepicker-wrapper {
+    display: block;
+    padding: 0;
+    border: 0;
+}
